@@ -1,8 +1,13 @@
 The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API), which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`, we started drafting a potential V2 of the API.
 
+The API will be designed in 2 steps:
+
+- a low level, not DOM based, exhaustive API, with JS bindings and Rust bindings (traits compiled from webidl files).
+- a higher level, DOM based, developer friendly API, built on top of the low level API
+
 ## Servo overview
 
-In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document). Frames contain a set of ordered pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids. Pipelines and frames live in a constellation, the "Command Control" that passes messages to pipelines.
+In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document). Frames contain a sorted set of pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids. Pipelines and frames live in a constellation, the "Command Control" that passes messages to pipelines.
 
 ### pipeline
 
