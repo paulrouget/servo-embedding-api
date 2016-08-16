@@ -170,6 +170,7 @@ Proxy settings
 ## Misc
 
 talk to Glenn about:
+
 - frame vs. bounds
 - animating bounds (.animate() and on scroll)
 - rendering frozen pipelines
@@ -177,9 +178,11 @@ talk to Glenn about:
 - pipeline sampling
 
 talk to Cbrewster about:
+
 - any issue with selecting a pipeline instead of using joint_session_past/future?
 - would a gundo structure instead of a vec would work?
 
+Stuff:
 - link preview
 - dns prefetching, preload
 - content blockers
@@ -199,3 +202,6 @@ talk to Cbrewster about:
 - http://electron.atom.io/docs/api/web-view-tag/
 - http://electron.atom.io/docs/api/web-contents/
 - https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API
+
+Todo:
+- [throws]
