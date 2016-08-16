@@ -1,26 +1,4 @@
-/*
-
-
-
-focus
-onnewpipeline
-executeScript
-
-onopentab
-onopenwindow
-
-audioplaybackchanged
-
-mozbrowserusernameandpasswordrequired
-mozbrowsershowmodalprompt
-mozbrowserselectionstatechanged
-mozbrowserfindchange
-
-… add stuff from <webview>
-
-
-*/
-
+typedef USVString URL;
 
 [ArrayClass]
 interface PipelineList {
@@ -28,19 +6,65 @@ interface PipelineList {
   getter Pipeline getItem(unsigned long index);
 };
 
+interface HistoryEntry {
+  readonly attribute boolean isAlive;
+  readonly attribute Pipeline pipeline;
+  readonly attribute LoadData loadData;
+  readonly attribute boolean isPrivate;
+
+  void purge();
+  void restore(); // Doesn't it make sense?
+}
+
+interface PipelineInitData {
+  readonly attribute boolean isPrivate;
+  readonly attribute ViewPortDimension viewportDimension;
+  readonly attribute BrowsingContext browsingContext;
+  readonly attribute LoadData loadData;
+}
+
+enum ReferrerPolicy {
+  "no-referrer",
+  "no-referrer-when-downgrade",
+  "origin",
+  "same-origin",
+  "origin-when-cross-origin",
+  "unsafe-url"
+};
+
+interface LoadData {
+  readonly attribute URL url;
+  readonly attribute HTTPMethod method;
+  readonly attribute HTTPHeaders headers;
+  readonly attribute HTTPData? data;
+  readonly attribute ReferrerPolicy? referrerPolicy;
+  readonly attribute URL? referrerUrl;
+}
+
 interface BrowsingContext {
   readonly attribute PipelineList pipelines;
   Pipeline getActivePipeline();
   Pipeline getPipelineById(PipelineID id);
   boolean isPrivate();
+  void navigate(PipelineInitData pipelineInitData); // will create a new pipeline
 
-  void requestNewPipeline(/*FIXME*/);
+  attribute boolean autoPurgePipelines; // Default yes
+  attribute long historyToKeep;
+
   onclose;
+  on-new-pipeline;
+  on-will-opentab /* can be cancelled */
+  on-did-opentab /* comes with a BrowsingContext */
+  /* Same for windowpen */
+  /* duplicate what Electron does here */
 }
 
 interface ViewPort {
+  attribute boolean enableOverscroll;
   readonly attribute Rect frame;
-  readonly attribute Rect bounds;
+  readonly attribute Rect boundsAtRest;
+  attribute boolean updateBoundsOnScroll; // snapping?
+  void animateBounds(Rect bounds, long duration, TimingFunction timingFunction);
   readonly attribute BrowsingContext browsingContexts;
   attribute boolean visible; // Can this fail? If so, getter/setter
   onvisibylitychanged;
@@ -116,15 +140,17 @@ interface pipeline {
 
   isPrivate; // Here in browsing context?
 
+  /* Audio ? */
+
   readonly attribute boolean isPurged;
   readonly attribute boolean isPending;
   readonly attribute boolean isFrozen;
   readonly attribute boolean isActive; // A preloading pipeline can be non frozen and non visible
 
-  readonly attribute USVString url;
+  readonly attribute URL url;
   readonly attribute DOMString title;
   readonly attribute DocumentReadyState doumentReadyState;
-  readonly attribute USVString[] icons;
+  readonly attribute URL[] icons;
   readonly attribute MetaTag[] metas; // only <meta name="…">
 
   readonly attribute SecurityState securityState;
@@ -138,7 +164,9 @@ interface pipeline {
   void reload();
   void stopLoad();
   void clearCacheAndReload();
-  void download(USVString url, optional DownloadOptions options);
+  void download(URL url, optional DownloadOptions options);
+
+  void executeScript(/*FIXME*/);
 
   ontitlechanged;
   onurlchanged;
@@ -155,5 +183,12 @@ interface pipeline {
   oncontextmenu
 
   onerror
+
+/*
+usernameandpasswordrequired
+showmodalprompt
+selectionstatechanged
+findchange
+*/
   
 }

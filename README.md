@@ -1,44 +1,30 @@
-# Servo Embedding API
-
-
-FIXME:
-
-The initial motivation was to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API),
-which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser).
-After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`,
-we started drafting a potential V2 of the API.
-
-Notes:
+The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API), which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`, we started drafting a potential V2 of the API.
 
 ## Servo overview
 
-In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document).
-Frames contain a set of ordered pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids.
-Pipelines and frames live in a constellation, the "Command Control" that pass messages to pipelines.
+In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document). Frames contain a set of ordered pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids. Pipelines and frames live in a constellation, the "Command Control" that passes messages to pipelines.
 
 ### pipeline
 
 - internal name for a document within Servo
+- where layout, script (& DOM) and rendering happen
 - has an id shared between the different components of the engine
-- can be **frozen**. Happens for example when the user clicks on a link: a new document is created, the previous document/pipeline
-  is frozen, and ready to be thawed for when the user clicks the back button. No events are supposed to reach a frozen pipeline, the
-  script thread is idle, and rendering doesn't happen anymore.
-- can be **not visible**. Happens when the pipeline is not frozen but not on screen (background tab for example).
-  requestAnimationFrame and any animations are paused. Timers (setTimeout/setInterval) are slowed down.
+- can be **frozen**. Happens for example when the user clicks on a link: a new document is created, the previous document/pipeline is frozen, and ready to be thawed for when the user clicks the back button. No events are supposed to reach a frozen pipeline, the script thread is idle, and rendering doesn't happen anymore.
+- can be **not visible**. Happens when the pipeline is not frozen but not on screen (background tab for example). requestAnimationFrame and any animations are paused. Timers (setTimeout/setInterval) are slowed down.
 - initially a pipeline is said **pending**, until the document is created
 - contains frames
-  
 
 ### frame
 
-- equivalent to a browsing context
+- equivalent to a [browsing context](https://www.w3.org/TR/html51/browsers.html#sec-browsing-contexts)
 - a list of ordered **history entries** representing the history of this browsing context
 - `<iframes>` are frames
 - top level window is also a frame
-- a **history entry** is considered **dead** or **alive**
+- a **history entry** is considered **dead** or **alive** ([WIP in progress in Servo](https://github.com/servo/servo/pull/11893))
 - a **alive** entry is a reference to a pipeline
 - a **dead** entry was a pipeline that has been purged. Only the URL is saved.
 - more about how history works: https://github.com/asajeffrey/ServoNavigation/blob/master/notes/notes.pdf
+- the current document is the **active** entry
 
 ### constellation
 
@@ -94,33 +80,6 @@ Pipelines and frames live in a constellation, the "Command Control" that pass me
 - see viewport
 - build a full test suite, mock for early experiments
 
-## Questions:
-
-- Is there a way to reunite the Browser API, webdriver, and webextension, devtools API…
-- could we implement the same thing with Gecko? If so, do we want to?
-- initialization
-  - how to load a new URL?
-    - from browsingContent.
-  - how to create a viewport without a DOM element?
-    - low level API is JS only
-    - can it be compatible with Rust types?
-    - will be platform dependent
-- life time between internal pipelines and JS pipelines
-- can we create a pipeline ahead of time to preload content?
-  - can't be done now
-  - will need to skipped by joint_session
-  - doesn't seem to hard to do
-- design of window.open and opennewtab?
-- How run JS in content? As a worker? How to communicate back? Frame script?
-- how to drive chrome animations based on content scroll position?
-- are scrollsnapping and srollgrab necessary
-- how to context menu
-- tweak overscroll
-- devtools integration
-- sharing setting with content?
-- can we set referer/openner when creating a pipeline? Probably not necessary (as pipeline are creatd internally), but would that help in any way?
-- how to build extensions like adblock and video download helper?
-
 ## DOM API
 
 - brings declarativeness
@@ -155,7 +114,32 @@ The above is just food-for-though. Some issues:
 - is a DOM hieararchy necessary?
 - …
 
+## Questions:
 
+- Is there a way to reunite the Browser API, webdriver, and webextension, devtools API…
+- could we implement the same thing with Gecko? If so, do we want to?
+- initialization
+  - how to load a new URL?
+    - from browsingContext
+  - how to create a viewport without a DOM element?
+    - low level API is JS only
+    - can it be compatible with Rust types?
+    - will be platform dependent
+- life time between internal pipelines and JS pipelines
+- can we create a pipeline ahead of time to preload content?
+  - can't be done now
+  - will need to be skipped by joint_session
+  - doesn't seem to hard to do
+- design of window.open and opennewtab?
+- How run JS in content? As a worker? How to communicate back? Frame script?
+- how to drive chrome animations based on content scroll position?
+- are scrollsnapping and srollgrab necessary
+- how to context menu
+- tweak overscroll
+- devtools integration
+- sharing setting with content?
+- can we set referer/openner when creating a pipeline? Probably not necessary (as pipeline are creatd internally), but would that help in any way?
+- how to build extensions like adblock and video download helper?
 
 
 ## Scenarios
@@ -186,7 +170,7 @@ Proxy settings
 
 talk to Glenn about:
 - frame vs. bounds
-- animating bounds
+- animating bounds (.animate() and on scroll)
 - rendering frozen pipelines
 - rendering per pipelines? (no shared viewport)
 - pipeline sampling
@@ -210,7 +194,7 @@ talk to Cbrewster about:
 - https://github.com/servo/servo/issues/7083
 - understand webdriver
 - https://github.com/servo/servo/issues/7379
-- raw trackpage touch events
+- raw trackpad touch events
 - http://electron.atom.io/docs/api/web-view-tag/
 - http://electron.atom.io/docs/api/web-contents/
 - https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API
