@@ -1,3 +1,5 @@
+**This document is not even a draft. Just unsorted notes.**
+
 The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API), which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`, we started drafting a potential V2 of the API.
 
 The API will be designed in 2 steps:
