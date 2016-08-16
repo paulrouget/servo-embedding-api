@@ -25,6 +25,7 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 - a **dead** entry was a pipeline that has been purged. Only the URL is saved.
 - more about how history works: https://github.com/asajeffrey/ServoNavigation/blob/master/notes/notes.pdf
 - the current document is the **active** entry
+- warning: purge means deleting the pipeline, not forgetting it (in Browser API v1, purge means forget)
 
 ### constellation
 
