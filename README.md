@@ -61,12 +61,14 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 - onvisibilitychanged
 - https://github.com/browserhtml/browserhtml/issues/355
 
+![doodling](./doodling.png)
+
 ## Security
 
 - only top level frame's pipelines can have access to this API
 - content doesn't need any privilege, and should be sandboxed
 
-## API Consideration
+## API Considerations
 
 - good developer experience is not an immediate goal. We want 1) build a low level and not DOM-based API that brings as much as we want to the "user land" 2) build a developer-friendly DOM-based API on top of the JS API (See DOM API section)
 - better way to trace event origin: get a titleupdate event? We want to be sure which document

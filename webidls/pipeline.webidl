@@ -38,6 +38,7 @@ interface Pipeline {
   readonly attribute DocumentReadyState doumentReadyState;
   readonly attribute URL[] icons;
   readonly attribute MetaTag[] metas; // only <meta name="…">
+  readonly attribute String? hoveredLnk;
 
   readonly attribute SecurityState securityState;
 
