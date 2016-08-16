@@ -1,7 +1,3 @@
-Raw notes…
-
-
-Traits and webidl 
 
 ~~~~
 
@@ -64,9 +60,6 @@ How do we create pipeline: open question, dunno yet
 ~~~~
 
 
-I need to understand what Irakli needs 
-
-
 Servo's constrains:
 - speed
 - spec
@@ -78,7 +71,7 @@ Servo's constrains:
 
 ```
 My suggested API:
-- lot less intrusive
+- less intrusive
 - thinner connection to servo internals
 - a lot of the implementation can be done in JS
 - a micro low level rust+js API will be used
@@ -243,8 +236,8 @@ That would not suite us perfectly, but good enough?
 
 ~~~~~~~~~
 
-docshell/pipeline, browser api, webview
-Browser API V2:
+Browser API V2: study docshell/pipeline, browser api, webview, CEF
+
 - status (r/o)
 - methods (write)
 - events
@@ -281,53 +274,21 @@ HOWTO
 The transparent toolbar thing? Like… define visible frame and stuff. scrollsnapping and scrollgrab? What about synced anim with scroll or animations/transitions?
 Context menu? https://github.com/browserhtml/browserhtml/issues/29
 overscroll
-devtools
 sharing setting with content?
 cmd/ctrl/middle click
 target, browsing context, referer and opener support
 
-adblock, download helper
 private browsing
 now if native titlebar is on or off
 
 how to swipe- if swiping is handled in JS, how does one access this kind of information: https://github.com/servo/servo/issues/6226 (3 fingers vs 2 fingers). <- this is an interesting use case and can be used as an example in the final document
 
-How to download manager
-Session restore
-Proxy settings.
 
 
-
-Sandbox, security, webview, nodeintegration and Electron
-
-Sandbox doc: https://www.chromium.org/developers/design-documents/sandbox/Sandbox-FAQ and https://www.chromium.org/developers/design-documents/sandbox. Sandbox is per process. Sandboxed process communicates with privileged (not sandboxed) process via pipes.
-
-Electron doesn’t use sandbox because of “node integration”. Also, it was possible to force node integration (security issue). Explanation here: http://blog.scottlogic.com/2016/03/09/As-It-Stands-Electron-Security.html update here: http://blog.scottlogic.com/2016/06/01/An-update-on-Electron-Security.html
-
-Brave managed to enable sandboxing for regular tabs (renderer processes, no node integration). Nodeless renderer processes use content scripts as a replacement for the preload script. No <webview> available I guess.
-
-Electron can’t have Webview without nodeIntegration. NodeIntegration is their “chrome” mode, which is also used to allow creating `<webview>`.
-
-
-People suggest using a specific protocol scheme (myapp://…) to communicate with privileged code
-
-2 privileged APIs: Desktop, webview. Do we want to be able to use one without the other?
-
-http://electron.atom.io/docs/tutorial/security/
-
-Sandbox, security, webview, privileges and Servo
-
-Constellations should be sandboxed and wrapped into `<webview>`?
 
 Do we need “preload”? https://github.com/electron/electron/blob/master/docs/api/browser-window.md
 
-Maybe protocol:// + CSP for security model
 
-See dev-servo email
-
-Electron security: http://electron.atom.io/docs/tutorial/security/
-
-The <webview> tag is supposed to “sandbox remote content”.
 
 ________
 
@@ -394,8 +355,6 @@ read https://github.com/ConnorGBrewster/ServoNavigation && https://github.com/se
 libui(-rs)
 
 
-mfinkle, myk
-
 ~~~~~
 
 An API to handle pipelines, with no iframe at all. For example, we want to be able to freeze pipeline, drop/purge them.
@@ -419,51 +378,27 @@ Look at the context graph project.
 
 executeScript / webextension to get content from the page.
 
-~~~~~
-Embedding Strategy on mobile?
-
-“ajeffrey >  larsberg: atm we're one global constellation, and for bhtml I suspect that will always be the case. Embedding is tricky, especially as there are some bits of Rust std which assume globals, e.g. panic hooks and logging.”
-
-
-
-~~~~~~
-
-
-shared code with reflox/corejs
-
-https://github.com/servo/servo/issues/7379
-
-
-asar://  https://github.com/electron/electron/blob/master/docs/tutorial/application-packaging.md
-
 
 ~~~~~
-
-
 
 
 Figure out if we really need swipe gestures:
-
 For browser.html, we want to be able to respond to two-finger gestures, and move things around according.
-
 Here is a video showing http://fat.gfycat.com/ElatedDistantDrever.mp4
-
 Maybe we only need scroll gestures???
-
 2. Expose raw trackpad touch events as regular DOM touch events. Trackpad touch events do not come with on-screen coordinates, but trackpad-relative coordinates, so it's not exactly touch events like on mobile. But maybe we can extend the touch events to include `trackpadX|Y` coordinates.
-
 3. Moving 2 fingers on the trackpad is also used for scrolling. So we want scrolling to happen, and then get swipe events. The ultimate goal is to pan/move objects when we reach its scroll limit (if scrollable, otherwise, we start panning right away). So maybe a solution that would mix overscroll (https://github.com/servo/servo/issues/7671) and scroll events,  
-
 See also:
 * Gecko's `MozSwipeGesture*` events: https://dxr.mozilla.org/mozilla-central/source/dom/interfaces/events/nsIDOMSimpleGestureEvent.idl
 * Cocoa reference: https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/EventOverview/HandlingTouchEvents/HandlingTouchEvents.html
 
 
+~~~~~
+
+
 Servo:
 - Rendering: https://github.com/mozilla/browser.html/issues/562
 - Browser API: https://github.com/mozilla/browser.html/issues/639
-- Runtime: https://github.com/servo/servo/issues/7379
-- Secu model: https://wiki.mozilla.org/FirefoxOS/New_security_model
 
 
 http://electron.atom.io/docs/api/web-view-tag/
@@ -472,6 +407,4 @@ http://electron.atom.io/docs/api/web-contents/
 
 
 ~~~
-
-packaging for the web: https://w3ctag.github.io/packaging-on-the-web/
 

@@ -55,6 +55,8 @@ interface Pipeline {
   onmetachanged;
 
   /*
+    is getScreenshot() necessary
+    onlinkhovered
     onfrozen onthaw;
     onactive onunactive: entry or pipeline?
     onsecuritystatechange;
