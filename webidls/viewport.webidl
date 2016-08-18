@@ -23,4 +23,12 @@ interface ViewPort {
   attribute boolean overscrollEnabled;
   onvisibylitychanged;
   onfirstpaint;
+
+  /* FIXME:
+      focus
+      forwardKeys;
+      forwardMouseEvents;
+      scroll
+      think embeeding in a game
+  */
 }

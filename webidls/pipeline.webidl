@@ -48,7 +48,7 @@ interface Pipeline {
   void clearCacheAndReload();
   void download(URL url, optional DownloadOptions options);
 
-  void executeScript(/*FIXME*/);
+  void executeScript(/*FIXME*/); // Maybe use a stream?
 
   ontitlechanged;
   onurlchanged;
@@ -66,6 +66,12 @@ interface Pipeline {
     usernameandpasswordrequired
     showmodalprompt
     selectionstatechanged
+
+    performance:
+      DOM performance timing API
+      a process/manager:
+        CPU/Mem
+        nice
   */
   
 }

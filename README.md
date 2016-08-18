@@ -182,8 +182,14 @@ talk to Glenn about:
 
 - frame vs. bounds
 - animating bounds (.animate() and on scroll)
-- rendering frozen pipelines
+
+- rendering frozen pipelines: easier (~ a week of work)
 - rendering per pipelines? (no shared viewport)
+  maybe have a way to tell the pipeline to save texture for future use
+    have a function to tell to save texture/DL
+    different save stragery:
+      display list: FPS drops (100K per pipeline)
+      texture: mem goes up (lot more Mb)
 - pipeline sampling
 
 talk to Cbrewster about:
@@ -214,3 +220,6 @@ Stuff:
 
 Todo:
 - [throws]
+- use promises for failures
+- how to build this whole API in steps
+  Going from Browser API V1 to Browser API V2 by steps
