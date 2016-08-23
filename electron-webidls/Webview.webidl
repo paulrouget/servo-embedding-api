@@ -19,6 +19,25 @@ enum StopFindInPageAction {
   "activateSelection", // Focus and click the selection node
 };
 
+dictionary PrintOptions {
+  Number marginsType; // - Specifies the type of margins to use. Uses 0 for default margin, 1 for no margin, and 2 for minimum margin.
+  String pageSize; // - Specify page size of the generated PDF. Can be A3, A4, A5, Legal, Letter, Tabloid or an Object containing height and width in microns.
+  boolean printBackground; // - Whether to print CSS backgrounds.
+  boolean printSelectionOnly; // - Whether to print selection only.
+  boolean landscape; // - true for landscape, false for portrait. 
+}
+
+
+dictionary InputEventOption {
+  String type; // (required) - The type of the event, can be mouseDown, mouseUp, mouseEnter, mouseLeave, contextMenu, mouseWheel, mouseMove, keyDown, keyUp, char.
+  String[] modifiers; // - An array of modifiers of the event, can include shift, control, alt, meta, isKeypad, isAutoRepeat, leftButtonDown, middleButtonDown, rightButtonDown, capsLock, numLock, left, right.
+}
+
+enum SaveType {
+  "HTMLOnly", // Save only the HTML of the page.
+  "HTMLComplete", // Save complete-html page.
+  "MHTML", // Save complete-html page as MHTML.
+}
 
 interface Webview {
 
@@ -141,6 +160,14 @@ interface Webview {
   boolean isDevToolsFocused();
   void inspectElement(Number x, Number y);
   void inspectServiceWorker();
+  void addWorkSpace(path);
+  void removeWorkSpace(path);
+  void hasServiceWorker(callback);
+  void unregisterServiceWorker(callback);
+  void enableDeviceEmulation(parameters);
+  void disableDeviceEmulation();
+
+
 
   void setAudioMuted(boolean muted);
   boolean isAudioMuted();
@@ -173,9 +200,90 @@ interface Webview {
   void send(String channel, ...args[]);
 
   void showDefinitionForSelection(); // macos only
-  void sendInputEvents(event);
+  void sendInputEvent(InputEventOption);
 
-  WebContents getWebContents(); // FIXME
+  WebContents getWebContents();
+
+  // Not part of <webview>, only webContents:
+
+  void downloadURL(URL url);
+  boolean isDestroyed();
+  boolean isFocused();
+  boolean isLoadingMainFrame();
+  void setZoomFactor(factor);
+  void getZoomFactor(callback);
+
+
+  // Changes the zoom level to the specified level. The original size is 0 and
+  // each increment above or below represents zooming 20% larger or smaller to
+  // default limits of 300% and 50% of original size, respectively.
+  void setZoomLevel(level);
+  void getZoomLevel(callback);
+
+  // Sets the maximum and minimum zoom level.
+  void setZoomLevelLimits(minimumLevel, maximumLevel);
+
+  void copyImageAt(long x, long y);
+
+
+
+  // Begin subscribing for presentation events and captured frames, the
+  // callback will be called with callback(frameBuffer, dirtyRect) when there
+  // is a presentation event.  The frameBuffer is a Buffer that contains raw
+  // pixel data. On most machines, the pixel data is effectively stored in
+  // 32bit BGRA format, but the actual representation depends on the endianness
+  // of the processor (most modern processors are little-endian, on machines
+  // with big-endian processors the data is in 32bit ARGB format).  The
+  // dirtyRect is an object with x, y, width, height properties that describes
+  // which part of the page was repainted. If onlyDirty is set to true,
+  // frameBuffer will only contain the repainted area. onlyDirty defaults to
+  // false.
+  void beginFrameSubscription(optional boolean onlyDirty,callback);
+  void endFrameSubscription();
+
+
+  // Sets the item as dragging item for current drag-drop operation, file is
+  // the absolute path of the file to be dragged, and icon is the image showing
+  // under the cursor when dragging.
+  void startDrag(String iteam, NativeImage icon);
+
+  void savePage(String fullPath, SaveType saveType, callback);
+
+
+  // Indicates whether offscreen rendering is enabled.
+  boolean isOffscreen();
+
+  // If offscreen rendering is enabled and not painting, start painting.
+  void startPainting();
+
+  // If offscreen rendering is enabled and painting, stop painting.
+  void stopPainting();
+
+  // If offscreen rendering is enabled returns whether it is currently painting.
+  boolean isPainting();
+
+  // If offscreen rendering is enabled sets the frame rate to the specified
+  // number. Only values between 1 and 60 are accepted.
+  void setFrameRate(fps);
+
+  // If offscreen rendering is enabled returns the current frame rate.
+  long getFrameRate();
+
+  // The unique ID of this WebContents.
+  String id;
+
+  // Returns the session object used by this webContents.
+  Session session; // FIXME
+
+  // Returns the WebContents that might own this WebContents.
+  WebContents hostWebContents;
+
+  // Get the WebContents of DevTools for this WebContents.
+  WebContents devToolsWebContents;
+
+  // Get the debugger instance for this webContents.
+  DebuggerInstance debugger;
+
 }
 
 // DOM EVSNTS
@@ -427,7 +535,7 @@ dictionary DidChangeThemColorEventDetail {
 dictionary UpdateTargetURLEventDetail {
   // type: ‘update-target-url’
   // not in webContents
-  URL url;
+  String url;
 }
 
 // Emitted when DevTools is opened.
@@ -499,4 +607,82 @@ dictionary LoginEventDetail { // FIXME: missing definitions
 }
 
 
-FIXME next: http://electron.atom.io/docs/api/web-contents/#event-found-in-page
+dictionary CursorChangedEventDetail {
+  // type: ‘cursor-changed’
+  NativeImage? image;
+  Object? size; // the size of the image
+  float? scale; // scaling factor for the custom cursor
+  Object? hotspot; // coordinates of the custom cursor’s hotspot
+  long width;
+  long height;
+  long x;
+  long y;
+
+}
+
+dictionary ContextMenuEventDetail {
+  // type: ‘context-menu’
+  Object params;
+  Integer x; // x coordinate
+  Integer y; // - y coordinate
+  String linkURL; // - URL of the link that encloses the node the context menu was invoked on.
+  String linkText; // - Text associated with the link. May be an empty string if the contents of the link are an image.
+  String pageURL; // - URL of the top level page that the context menu was invoked on.
+  String frameURL; // - URL of the subframe that the context menu was invoked on.
+  String srcURL; // - Source URL for the element that the context menu was invoked on. Elements with source URLs are images, audio and video.
+  String mediaType; // - Type of the node the context menu was invoked on. Can be none, image, audio, video, canvas, file or plugin.
+  Boolean hasImageContents; // - Whether the context menu was invoked on an image which has non-empty contents.
+  Boolean isEditable; // - Whether the context is editable.
+  String selectionText; // - Text of the selection that the context menu was invoked on.
+  String titleText; // - Title or alt text of the selection that the context was invoked on.
+  String misspelledWord; // - The misspelled word under the cursor, if any.
+  String frameCharset; // - The character encoding of the frame on which the menu was invoked.
+  String inputFieldType; // - If the context menu was invoked on an input field, the type of that field. Possible values are none, plainText, password, other.
+  String menuSourceType; // - Input source that invoked the context menu. Can be none, mouse, keyboard, touch, touchMenu.
+  MediaFlags mediaFlags; // - The flags for the media element the context menu was invoked on. See more about this below.
+  EditFlags editFlags; // - These flags indicate whether the renderer believes it is able to perform the corresponding action. See more about this below.
+}
+
+dictionary MediaFlags {
+  boolean inError; // - Whether the media element has crashed.
+  boolean isPaused; // - Whether the media element is paused.
+  boolean isMuted; // - Whether the media element is muted.
+  boolean hasAudio; // - Whether the media element has audio.
+  boolean isLooping; // - Whether the media element is looping.
+  boolean isControlsVisible; // - Whether the media element’s controls are visible.
+  boolean canToggleControls; // - Whether the media element’s controls are toggleable.
+  boolean canRotate; // - Whether the media element can be rotated.
+}
+
+dictionary EditFlags {
+  boolean canUndo; // - Whether the renderer believes it can undo.
+  boolean canRedo; // - Whether the renderer believes it can redo.
+  boolean canCut; // - Whether the renderer believes it can cut.
+  boolean canCopy; // - Whether the renderer believes it can copy
+  boolean canPaste; // - Whether the renderer believes it can paste.
+  boolean canDelete; // - Whether the renderer believes it can delete.
+  boolean canSelectAll; // - Whether the renderer believes it can select all.
+}
+
+
+// Emitted when bluetooth device needs to be selected on call to
+// navigator.bluetooth.requestDevice. To use navigator.bluetooth api
+// webBluetooth should be enabled. If event.preventDefault is not called, first
+// available device will be selected. callback should be called with deviceId
+// to be selected, passing empty string to callback will cancel the request.
+dictionary SelectBluetoothDeviceEventDetail {
+  // type: ‘select-bluetooth-device’
+  Objects[] devices;
+  String deviceName;
+  String deviceId;
+  Function callback;
+  String deviceId;
+}
+
+// Emitted when a new frame is generated. Only the dirty area is passed in the
+// buffer.
+dictionary PaintEventDetail {
+  // type: ‘paint’
+  Rect dirtyRect;
+  NativeImage image; // The image data of the whole frame.
+}
