@@ -5,7 +5,7 @@ enum BrowsingContextEventType {
   "will-close",
   "will-opentab",
   "will-openwindw",
-
+  
   "did-close",
   "did-opentab",
   "did-openwindw",

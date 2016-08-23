@@ -181,9 +181,11 @@ Proxy settings
 talk to Glenn about:
 
 - frame vs. bounds
+  -> possible
 - animating bounds (.animate() and on scroll)
+  -> possible
 
-- rendering frozen pipelines: easier (~ a week of work)
+- rendering frozen pipelines: easier
 - rendering per pipelines? (no shared viewport)
   maybe have a way to tell the pipeline to save texture for future use
     have a function to tell to save texture/DL
@@ -194,6 +196,8 @@ talk to Glenn about:
 
 talk to Cbrewster about:
 
+- cost of interupting navigation (will-nagigate)
+- how to pintabs
 - any issue with selecting a pipeline instead of using joint_session_past/future?
 - would a gundo structure instead of a vec would work?
 
@@ -223,3 +227,5 @@ Todo:
 - use promises for failures
 - how to build this whole API in steps
   Going from Browser API V1 to Browser API V2 by steps
+- relation between Electron webViews and CEF?
+- async all the things
