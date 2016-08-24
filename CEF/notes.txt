@@ -1,0 +1,23 @@
+https://github.com/cztomczak/cefcapi/tree/master/include/capi
+https://github.com/servo/servo/tree/master/ports/cef/interfaces
+
+CefApp: passed to CefInitialize() and allows the application to customize
+global functionality like resource loading and proxy handling.
+
+CefClient: passed to CefCreateBrowser() or CefCreateBrowserSync() and acts as
+the connection between an individual CEF browser instance and the client
+application. Additional interfaces for request handling, display handling, etc.
+are exposed via this interface.
+
+CefBrowser: Exposes capabilities provided by the browser. This includes
+back/forward navigation, source retrieval, request loading, etc. A single
+CefBrowser may have one or more child CefFrame objects.
+
+
+CefNavigationEntry
+CefBrowserHost -> compositor/viewport ?
+CefBrowser -> browsingContent ?
+CefFrame // http://magpcss.org/ceforum/apidocs/projects/(default)/CefFrame.html
+
+CefDisplayHandler
+CefRenderHandler
