@@ -185,13 +185,15 @@ talk to Glenn about:
 - animating bounds (.animate() and on scroll)
   -> possible
 
-- rendering frozen pipelines: easier
+- rendering frozen pipelines
+  -> possible (easier)
 - rendering per pipelines? (no shared viewport)
   maybe have a way to tell the pipeline to save texture for future use
     have a function to tell to save texture/DL
     different save stragery:
       display list: FPS drops (100K per pipeline)
       texture: mem goes up (lot more Mb)
+
 - pipeline sampling
 
 talk to Cbrewster about:
