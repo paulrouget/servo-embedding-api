@@ -223,6 +223,10 @@ Stuff:
 - http://electron.atom.io/docs/api/web-view-tag/
 - http://electron.atom.io/docs/api/web-contents/
 - https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API
+- the low level API for:
+  - browser api
+  - extensions mechanism, web extension
+  - web driver
 
 Todo:
 - [throws]
@@ -231,3 +235,6 @@ Todo:
   Going from Browser API V1 to Browser API V2 by steps
 - relation between Electron webViews and CEF?
 - async all the things
+- houdini
+- events: can we get the events before they get
+  in the iframe
