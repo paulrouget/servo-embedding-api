@@ -100,7 +100,6 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 - same for the frozen pipeline rendering
 - we will need DOM mutation
 - will need to make it clear what is readonly/read-n-write
-- let's forbid async getter
 - events can be cancelled, so we keep event.details, and update the element property once event has succesfuly propagated (if cancelable)
 - Event propagation / delegation should be specified. Ex: https://github.com/browserhtml/browserhtml/issues/317
     - forcetouch, escape issue
