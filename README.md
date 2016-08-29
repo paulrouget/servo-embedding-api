@@ -27,6 +27,8 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 - a list of ordered **history entries** representing the history of this browsing context
 - `<iframes>` are frames
 - top level window is also a frame
+
+### History Entry
 - a **history entry** is considered **dead** or **alive** ([WIP in progress in Servo](https://github.com/servo/servo/pull/11893))
 - a **alive** entry is a reference to a pipeline
 - a **dead** entry was a pipeline that has been purged. Only the URL is saved.
