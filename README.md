@@ -1,9 +1,9 @@
 The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API), which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`, we started drafting a potential V2 of the API.
 
-This project is an attempt to put together an multi-purpose low level API that could be used to embed and control Servo.
+This project is an attempt to put together a multi-purpose low level API that could be used to embed and control Servo.
 
 Consumers of this API would be:
-- a JS library that would make it easy to build a browser in HTML (think Mozilla's Browser API or Electron's Webview)
+- a JS library that would make it easy to build a browser in HTML (think [Mozilla's Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API) or [Electron's Webview](https://github.com/electron/electron/blob/master/docs/api/web-contents.md))
 - A [WebDriver](https://www.w3.org/TR/webdriver/) implementation
 - A [WebExtension](https://developer.chrome.com/extensions) implementation
 - Developer tools
@@ -11,6 +11,12 @@ Consumers of this API would be:
 This low level API will be initially described with WebIDL, but we don't think this API should be restricted only to JavaScript/DOM consumers.
 
 This low level API covers only **Servo <-> consumer** communication. The above scenarios also require extra powers, like access to the operating system. This project doesn't address this problematic as it's an orthogonal problem (we usually refer to app level or operating system access as "Runtime).
+
+The main goals of this API are:
+- exhaustive. We want it to cover enough that it will suffice for most Servo embedders
+- non-blocking
+- minimal impact on Servo's internals
+- minimal impact on standardised components (unlike the current Browser API that re-use the `<iframe>` element)
 
 **This document is not even a draft. Just unsorted notes.**
 
