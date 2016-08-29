@@ -4,12 +4,13 @@ This project is an attempt to put together an multi-purpose low level API that c
 
 Consumers of this API would be:
 - a JS library that would make it easy to build a browser in HTML (think Mozilla's Browser API or Electron's Webview)
-- A WebDriver implementation
-- A WebExtension implementation
+- A [WebDriver](https://www.w3.org/TR/webdriver/) implementation
+- A [WebExtension](https://developer.chrome.com/extensions) implementation
+- Developer tools
 
 This low level API will be initially described with WebIDL, but we don't think this API should be restricted only to JavaScript/DOM consumers.
 
-This low level API covers only **Servo <-> consumer** communication. The above scenario also require extra powers, like access to the operating system. This project doesn't address this problematic as it's an orthogonal problem.
+This low level API covers only **Servo <-> consumer** communication. The above scenarios also require extra powers, like access to the operating system. This project doesn't address this problematic as it's an orthogonal problem (we usually refer to app level or operating system access as "Runtime).
 
 **This document is not even a draft. Just unsorted notes.**
 
