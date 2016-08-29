@@ -16,6 +16,9 @@ dictionary MetaTag {
   readonly attribute DOMString content;
 }
 
+interface UnprivilegedPipeline {
+}
+
 interface Pipeline {
 
   readonly attribute ConnectionSecurityState connectionSecurityState;
@@ -48,7 +51,17 @@ interface Pipeline {
   void clearCacheAndReload();
   void download(URL url, optional DownloadOptions options);
 
-  void executeScript(/*FIXME*/); // Maybe use a stream?
+  // FIXME: content script and CSS strategy:
+  // - how to communicate back?
+  // - special privileges?
+  // - postMessage?
+  // See https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#Content_scripts
+  // Also: how to publish webaccessibleResources? https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#Web_accessible_resources
+  // Also see https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/Tabs/executeScript
+  void executeScript(/*FIXME*/); // code or/and url
+  void loadCSS(/* FIXME */);
+  // FIXME: Manipulate cookies (web extensions requirement)
+  // See: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/cookies
 
   ontitlechanged;
   onurlchanged;
@@ -76,4 +89,5 @@ interface Pipeline {
   
 }
 
-PipelineList implements Searchable;
+Pipeline implements Searchable;
+Pipeline implements HttpObserverManager;

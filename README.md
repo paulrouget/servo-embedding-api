@@ -1,11 +1,17 @@
-**This document is not even a draft. Just unsorted notes.**
-
 The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API), which is a set of extra methods, property and events on top of the DOM `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's implementation of the the Browser API, and Electron's `<webview>`, we started drafting a potential V2 of the API.
 
-The API will be designed in 2 steps:
+This project is an attempt to put together an multi-purpose low level API that could be used to embed and control Servo.
 
-- a low level, not DOM based, exhaustive API, with JS bindings and Rust bindings (traits compiled from webidl files).
-- a higher level, DOM based, developer friendly API, built on top of the low level API
+Consumers of this API would be:
+- a JS library that would make it easy to build a browser in HTML (think Mozilla's Browser API or Electron's Webview)
+- A WebDriver implementation
+- A WebExtension implementation
+
+This low level API will be initially described with WebIDL, but we don't think this API should be restricted only to JavaScript/DOM consumers.
+
+This low level API covers only **Servo <-> consumer** communication. The above scenario also require extra powers, like access to the operating system. This project doesn't address this problematic as it's an orthogonal problem.
+
+**This document is not even a draft. Just unsorted notes.**
 
 ## Servo overview
 
@@ -62,6 +68,12 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 - onfirstpaint
 - onvisibilitychanged
 - https://github.com/browserhtml/browserhtml/issues/355
+- Use [CompositorWorker](https://github.com/w3c/css-houdini-drafts/blob/master/composited-scrolling-and-animation/Explainer.md)
+  to change content padding and animate things on content scrolling
+  - will need to introduce `data.viewport.contentScrollTop|Right|Bottom|Left`
+    and use data.viewport.padding to resize content while showing things outside
+    of viewport
+  - could this work for a non-DOM API?
 
 ![doodling](./doodling.png)
 
@@ -124,6 +136,18 @@ The above is just food-for-though. Some issues:
 - attribute can't be readonly
 - is a DOM hieararchy necessary?
 - …
+
+## Web Extensions
+
+The Web Extension API can be implemented by combining:
+- This Browser API V2 (script injection, WebRequestManager, browserAction, …)
+- some embedder code (for example, tabs management, bookmarks, …)
+- runtime code (for example, native windows, part of the WE runtime API, …)
+
+## WebDriver
+
+FIXME
+- can we implement webdriver on top of the embedding api?
 
 ## Questions:
 
@@ -192,8 +216,8 @@ talk to Glenn about:
   maybe have a way to tell the pipeline to save texture for future use
     have a function to tell to save texture/DL
     different save stragery:
-      display list: FPS drops (100K per pipeline)
-      texture: mem goes up (lot more Mb)
+      display list: perf--, mem++
+      texture: perf++, mem--
 
 - pipeline sampling
 
@@ -214,7 +238,6 @@ Stuff:
 - https://github.com/browserhtml/browserhtml/issues/1227
 - CEF story? CEF: https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage & http://magpcss.org/ceforum/apidocs3/
 - security model?
-- content blocker?
 - privatebrowsing?
 - https://github.com/browserhtml/browserhtml/issues/639
 - https://github.com/servo/servo/issues/7083
@@ -236,6 +259,6 @@ Todo:
   Going from Browser API V1 to Browser API V2 by steps
 - relation between Electron webViews and CEF?
 - async all the things
-- houdini
-- events: can we get the events before they get
-  in the iframe
+- houdini: https://www.smashingmagazine.com/2016/03/houdini-maybe-the-most-exciting-development-in-css-youve-never-heard-of/
+- events: can we get the events before they get in the iframe
+- make sure WE is fully implementable: https://developer.mozilla.org/en-US/Add-ons/WebExtensions

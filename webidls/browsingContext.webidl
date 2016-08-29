@@ -21,6 +21,18 @@ interface HistoryEntryList {
 
 
 interface HistoryEntry {
+
+  // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/TransitionType
+  readonly attribute TransitionType transitionType;
+
+  readonly attribute String title;
+  // URL is in loadData
+
+  // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
+  readonly attribute Time lastVisitTime;
+  readonly attribute Number visitCount;
+  readonly attribute Number typedCount;
+
   readonly attribute boolean isAlive; // equivalent of entry.pipeline != undefined
   readonly attribute Pipeline? pipeline;
   readonly attribute LoadData loadData; // Only updated when pipeline dies
