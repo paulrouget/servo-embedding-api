@@ -1,12 +1,3 @@
-typedef USVString URL;
-
-interface PipelineInitData {
-  readonly attribute boolean isPrivate;
-  readonly attribute ViewPortDimension viewportDimension;
-  readonly attribute BrowsingContext browsingContext;
-  readonly attribute LoadData loadData;
-}
-
 interface PipelinePreview {
   /* how to hook pipeline preview with viewport? */
 }
@@ -17,31 +8,25 @@ dictionary MetaTag {
 }
 
 interface UnprivilegedPipeline {
+  // Things that can be used by content script.
 }
 
 interface Pipeline {
-
   readonly attribute ConnectionSecurityState connectionSecurityState;
+  readonly attribute boolean isPrivate; // Here or in browsing context?
+  readonly attribute boolean isPending; // Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive
+  readonly attribute boolean isActive; // Is alive. The current document of a frame.
 
   attribute float devicePixelRatio;
 
-  readonly attribute DOMString id;
-  readonly attribute DOMString BrowsingContextId;
-
-  readonly attribute boolean isPrivate; // Here or in browsing context?
-
   /* Audio ? */
 
-  readonly attribute boolean isPending;
-  readonly attribute boolean isFrozen;
-  readonly attribute boolean isActive; // A preloading pipeline can be non frozen and non visible
-
-  readonly attribute URL url;
+  readonly attribute USVString url;
   readonly attribute DOMString title;
-  readonly attribute DocumentReadyState doumentReadyState;
-  readonly attribute URL[] icons;
-  readonly attribute MetaTag[] metas; // only <meta name="…">
-  readonly attribute String? hoveredLnk;
+  readonly attribute DocumentReadyState doumentReadyState; // See Document.webidl
+  readonly attribute Sequence<USVString> icons;
+  readonly attribute Sequence<MetaTag> metas; // only <meta name="…" content="…">
+  readonly attribute String? hoveredLink;
 
   readonly attribute SecurityState securityState;
 
@@ -49,7 +34,7 @@ interface Pipeline {
   void reload();
   void stopLoad();
   void clearCacheAndReload();
-  void download(URL url, optional DownloadOptions options);
+  void download(USVString url, optional DownloadOptions options);
 
   // FIXME: content script and CSS strategy:
   // - how to communicate back?

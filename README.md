@@ -113,8 +113,10 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 
 ## DOM API
 
+This is for later, but this is the kind of DOM API we want to be able to build on top of the Servo embedding API.
+
 - brings declarativeness
-- built on top of low level API, user land
+- built on top of low level API, "user land"
 - except for viewport frame coordinates (coordinate in the document) which will come from top level document layout
 - same for the frozen pipeline rendering
 - we will need DOM mutation
@@ -261,7 +263,8 @@ Stuff:
 
 Todo:
 - [throws]
-- use promises for failures
+- Sequence, vs [], vs FrozenList
+- use promises for failures?
 - how to build this whole API in steps
   Going from Browser API V1 to Browser API V2 by steps
 - relation between Electron webViews and CEF?

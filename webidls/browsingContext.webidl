@@ -1,65 +1,42 @@
-enum BrowsingContextEventType {
-  /* duplicate what Electron does here */
-
-  // cancelable?
-  "will-close",
-  "will-opentab",
-  "will-openwindw",
-  
-  "did-close",
-  "did-opentab",
-  "did-openwindw",
-
-  "new-entry",
-};
-
-[ArrayClass]
-interface HistoryEntryList {
-  readonly attribute unsigned long length;
-  getter HistoryEntry getItem(unsigned long index);
-};
-
-
-interface HistoryEntry {
-
-  // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/TransitionType
-  readonly attribute TransitionType transitionType;
-
-  readonly attribute String title;
-  // URL is in loadData
-
-  // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
-  readonly attribute Time lastVisitTime;
-  readonly attribute Number visitCount;
-  readonly attribute Number typedCount;
-
-  readonly attribute boolean isAlive; // equivalent of entry.pipeline != undefined
-  readonly attribute Pipeline? pipeline;
-  readonly attribute LoadData loadData; // Only updated when pipeline dies
-  readonly attribute boolean isPrivate;
-
-  void purge();
-  void restore(); // Doesn't it make sense? Why and when will we want to do this?
-
-  /*
-    onwillpurge -> last chance to use pipeline (remove event listeners)
-    onrestored -> pipeline accessible
-    onactive onunactive: entry or pipeline?
-  */
-}
-
+typedef PreloadingPipelineID = long;
 
 // This can be used for session restore
-[Constructor(LoadData[] entries,
-             unsigned long activeIndex,
-             boolean restoreAll,
-             boolean private) Exposed=(Window,Worker)]
+[Constructor(Sequence<LoadData> entries, unsigned long activeIndex, boolean restoreAll, boolean private)]
 interface BrowsingContext {
-  readonly attribute HistoryEntryList historyEntries;
-  readonly unsigned long activeEntryIndex; // 
-  boolean isPrivate(); // Still don't if this should be a bcontext, entry or pipeline attribute (pipeline in servo)
-  void navigate(LoadData loadData); // will create a new pipeline
+  readonly attribute FrozenList<HistoryEntry> historyEntries;
+  readonly unsigned long activeEntryIndex;
+  boolean isPrivate(); // FIXME: Still don't know if this should be a bcontext, entry or pipeline attribute (part of pipeline in servo)
   void dropEntry(HistoryEntry);
   attribute boolean autoPurgePipelines; // Default yes
-  attribute Number historyToKeep;
+  attribute unsigned long historyToKeep; // Default 3
+  void insertNewEntry(LoadData data, unsigned long index, boolean active); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
+
+  PreloadingPipelineID preloadPipeline((LoadData or USVString) init);
+  void cancelPreloadingPipeline(PreloadingPipelineID id);
+  void navigateToPreloadingPipeline(PreloadingPipelineID id);
 }
+
+BrowsingContext implements EventEmitter;
+
+interface BrowsingContext_EntriesChanged : Event {
+  // When one or sereveral entries have been added, moved or removed.
+  // FIXME: this is to track the internal mutations of historyEntries.
+  // Consumer will have to make a diff internally to find what is new
+  // and what has been deleted and moved.
+  // Maybe we want to only allow atomic operations with corresponding events:
+  // "new-entry" and "entry-dropped" and "splice(…)"
+  const String type = "entries-changed";
+  const boolean cancellable = false;
+}
+
+interface BrowsingContext_ActiveEntryChanged: Event {
+  // A new document is displayed. Usually after the user
+  // clicked on a link and once the new document has been
+  // created (pipeline is not pending anymore).
+  // FIXME: is that actually necessary? The consumer is supposed to
+  // track any new entry and track if these turns active / inactive.
+  const String type = "active-entry-changed";
+  const boolean cancellable = false;
+}
+
+// FIXME: can it be destroyed? Are we missing "destroyed" event?

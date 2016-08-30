@@ -14,7 +14,7 @@ dictionary ViewportEvent{
   attribute readonly ViewportEventType type;
 };
 
-interface ViewPort {
+interface Viewport {
   readonly attribute Rect frame;
   attribute Rect boundsAtRest;
   void animateBounds(Rect bounds, long duration, String transitionTimingFunction);
@@ -31,4 +31,8 @@ interface ViewPort {
       scroll
       think embeeding in a game
   */
+}
+
+interface HeadlessViewport {
+  // FIXME?
 }
