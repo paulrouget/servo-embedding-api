@@ -263,7 +263,7 @@ Stuff:
 
 Todo:
 - [throws]
-- Sequence, vs [], vs FrozenList
+- Sequence (copy), vs `[]` (not supported), vs FrozenList (references)
 - use promises for failures?
 - how to build this whole API in steps
   Going from Browser API V1 to Browser API V2 by steps
