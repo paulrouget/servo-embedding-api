@@ -1,20 +1,3 @@
-enum HTTPMethod { "GET", "POST" }
-
-
-// FIXME: Is LoadData actually necessary? Can it be serialized from HistoryEntry to save the session?
-// Can a URL be used instead of LoadData to create a new pipeline/entry?
-[Constructor, Constructor((USVString or Blob /* serialized loadata */))]
-// Used to reload purged pipeline or to preload pipeline
-interface LoadData {
-  readonly attribute USVString url;
-  readonly attribute HTTPMethod method;
-  readonly attribute Headers headers; // Headers.webidl
-  readonly attribute BodyInit? data; // See XMLHttpequest.webdil
-  readonly attribute ReferrerPolicy? referrerPolicy; // See Request.webidl
-  readonly attribute USVString? referrerUrl;
-  Promise<Blob> serialize(); // Used to save to disk
-}
-
 // https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/history.json
 enum TransitionType {
   "link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe",

@@ -1,3 +1,6 @@
+// FIXME: See Webview.webidl
+
+
 [Constructor(optional unrestricted double x = 0, optional unrestricted double y = 0,
              optional unrestricted double width = 0, optional unrestricted double height = 0),
  Exposed=(Window,Worker)]

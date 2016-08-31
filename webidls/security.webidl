@@ -1,14 +1,36 @@
-//   "insecure" indicates that the data corresponding to
-//     the request was received over an insecure channel.
-//
-//   "broken" indicates an unknown security state.  This
-//     may mean that the request is being loaded as part
-//     of a page in which some content was received over
-//     an insecure channel.
-//
-//   "secure" indicates that the data corresponding to the
-//     request was received over a secure channel.
-enum ConnectionSecurityState { "insecure", "broken", "secure" }
+dictionary ConnectionSecurity {
+  readonly attribute CertificateInfo? certificateInfo;
+  readonly attribute ConnectionSecurityType state;
+
+  // Organization name has been verified, not just the domain.
+  // Marks the difference from a green lock and a green lock + org name.
+  readonly boolean attribute isExtendedValidation;
+
+  // See: https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
+  readonly attribute boolean mixedContentAllowed; // FIXME: where is this set?
+  readonly attribute boolean mixedContentLoaded;
+  readonly attribute boolean mixedContentBlocked;
+
+  // tracking content: content loaded from domains that track users across sites.
+  // See: https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection
+  readonly attribute boolean trackingContentAllowed; // FIXME: where is this set?
+  readonly attribute boolean trackingContentLoaded;
+  readonly attribute boolean trackingContentBlocked;
+};
+
+enum ConnectionSecurityState {
+  // indicates that the data corresponding to the request was
+  // received over an insecure channel.
+  "insecure",
+  // indicates an unknown security state.  This may mean that
+  // the request is being loaded as part of a page in which some
+  // content was received over an insecure channel.
+  "broken",
+  // indicates that the data corresponding to the request was
+  // received over a secure channel.
+  "secure"
+};
+
 dictionary CertificateInfo {
   readonly attribute DOMString commonName;
   readonly attribute DOMString organization;
@@ -20,29 +42,4 @@ dictionary CertificateInfo {
   readonly attribute DOMString sha1Fingerprint;
   readonly attribute DOMString validnotBeforeLocalDay;
   readonly attribute DOMString validNotAfterLocalDay;
-}
-
-dictionary ConnectionSecurity {
-  readonly attribute ConnectionSecurityType state;
-  boolean extendedValidation;
-  readonly attribute CertificateInfo? certificateInfo;
-}
-
-{
-  
-
-  // mixedState:
-  //   "blocked_mixed_active_content": Mixed active content has been blocked from loading.
-  //   "loaded_mixed_active_content": Mixed active content has been loaded.
-  DOMString mixedState;
-  boolean mixedContent;
-
-  // trackingState:
-  //   "loaded_tracking_content": tracking content has been loaded.
-  //   "blocked_tracking_content": tracking content has been blocked from loading.
-  DOMString trackingState;
-  boolean trackingContent;
 };
-
-
-

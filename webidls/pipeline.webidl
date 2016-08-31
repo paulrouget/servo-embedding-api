@@ -8,33 +8,52 @@ dictionary MetaTag {
 }
 
 interface UnprivilegedPipeline {
-  // Things that can be used by content script.
+  // FIXME: Things that can be used by content script.
 }
 
-interface Pipeline {
-  readonly attribute ConnectionSecurityState connectionSecurityState;
-  readonly attribute boolean isPrivate; // Here or in browsing context?
-  readonly attribute boolean isPending; // Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive
-  readonly attribute boolean isActive; // Is alive. The current document of a frame.
+interface Pipeline : UnprivilegedPipeline {
 
-  attribute float devicePixelRatio;
+  readonly attribute USVString url; // Event: url-changed. Happens during redirects for example.
+  readonly attribute DOMString title; // Event: title-changed
 
-  /* Audio ? */
+  // Used to replace mozbrowserconnected, mozbrowserloadstart, mozbrowserloadend
+  // Use performance for time stamps.
+  readonly attribute DocumentReadyState? documentReadyState; // Event: readystate-changed. Undefined if isPending or connection error. See Document.webidl
+  readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl
 
-  readonly attribute USVString url;
-  readonly attribute DOMString title;
-  readonly attribute DocumentReadyState doumentReadyState; // See Document.webidl
-  readonly attribute Sequence<USVString> icons;
-  readonly attribute Sequence<MetaTag> metas; // only <meta name="…" content="…">
-  readonly attribute String? hoveredLink;
+  readonly attribute FrozenList<USVString> icons; // Event: icons-changed
+  readonly attribute FrozenList<MetaTag> metas; // Event: metas-changed. only <meta name="…" content="…">
+  readonly attribute String? hoveredLink; // Event: hovered-link-changed.
+  readonly attribute ConnectionSecurity connectionSecurity; // Event: security-changed
 
-  readonly attribute SecurityState securityState;
+  readonly attribute boolean isPrivate; // Won't change. FIXME: Here or in browsing context?
+  readonly attribute boolean isPending; // Event: readystate-changed. Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive
+  readonly attribute boolean isFrozen; // Event: freeze and thaw. Pipeline has been frozen. The user navigated away for example.
+
+  readonly attribute unsigned float devicePixelRatio; // Event: device-pixel-ratio-changed
 
 
-  void reload();
+  Promise<unsigned float> setDevicePixelRatio(unsigned float ratio);
+
   void stopLoad();
+  void reload(); // FIXME: will that create a new pipeline? https://github.com/servo/servo/issues/13123
   void clearCacheAndReload();
-  void download(USVString url, optional DownloadOptions options);
+
+  // FIXME: what about WebContents::session?
+
+
+  // FIXME: save
+  // FIXME: what about WebContents::beginFrameSubscription
+
+  // FIXME: InputEvents forwarding. How to?
+
+  // FIXME: next: cover WebContents.webidl
+
+  // FIXME:
+  readonly attribute ConnectionError connectionError; // connection-error
+  // pipeline health: crash or not
+  // connection health: connection to http server success?
+  // http health: status code
 
   // FIXME: content script and CSS strategy:
   // - how to communicate back?
@@ -47,32 +66,20 @@ interface Pipeline {
   void loadCSS(/* FIXME */);
   // FIXME: Manipulate cookies (web extensions requirement)
   // See: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/cookies
-
-  ontitlechanged;
-  onurlchanged;
-  oniconschanged;
-  onmetachanged;
+  void getScreenshot();
+  void download(USVString url, optional DownloadOptions options);
 
   /*
-    is getScreenshot() necessary
-    onlinkhovered
-    onfrozen onthaw;
-    onactive onunactive: entry or pipeline?
-    onsecuritystatechange;
+    Audio ?
     oncontextmenu
     onerror
     usernameandpasswordrequired
     showmodalprompt
-    selectionstatechanged
-
-    performance:
-      DOM performance timing API
-      a process/manager:
-        CPU/Mem
-        nice
   */
   
 }
 
 Pipeline implements Searchable;
 Pipeline implements HttpObserverManager;
+Pipeline implements Editable;
+Pipeline implements MultimediaManager;

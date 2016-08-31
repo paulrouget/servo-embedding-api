@@ -272,3 +272,10 @@ Todo:
 - houdini: https://www.smashingmagazine.com/2016/03/houdini-maybe-the-most-exciting-development-in-css-youve-never-heard-of/
 - events: can we get the events before they get in the iframe
 - make sure WE is fully implementable: https://developer.mozilla.org/en-US/Add-ons/WebExtensions
+- make read-n-write attribute functions?
+- maybe split APIs into:
+  - methods -> promises<state>
+  - readonly state
+- Dictionnaries don't use attributes!!!
+- Figure out how to describe events
+- maybe rename pipeline to "TopPipeline" or something. Because no access to inner pipelines, and maybe pipelines may get replaced (think reload())

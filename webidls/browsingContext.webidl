@@ -1,5 +1,7 @@
 typedef PreloadingPipelineID = long;
 
+// FIXME: this feels busy and not very "clear" how entries are added, removed…
+
 // This can be used for session restore
 [Constructor(Sequence<LoadData> entries, unsigned long activeIndex, boolean restoreAll, boolean private)]
 interface BrowsingContext {
