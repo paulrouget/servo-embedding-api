@@ -6,11 +6,12 @@ enum TransitionType {
 }
 
 interface HistoryEntry {
+
   readonly attribute String? title;
-  readonly attribute USVString? url;
+  readonly attribute USVString? url; // Get updated with redirections
+
   readonly attribute TransitionType transitionType;
-  readonly attribute boolean isAlive; // equivalent of entry.pipeline != null
-  readonly attribute boolean isPrivate;
+  readonly attribute boolean isPipelineAlive; // equivalent of entry.pipeline != null
 
   // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
   readonly attribute DOMTimeStamp lastVisitTime;
@@ -20,8 +21,8 @@ interface HistoryEntry {
   readonly attribute Pipeline? pipeline;
   
   Promise<LoadData> getLoadData();
-  Promise<void> purge();
-  Promise<Pipeline> restore(); // Doesn't it make sense? Why and when will we want to do this?
+  Promise<void> purgePipeline();
+  Promise<Pipeline> restorePipeline(); // Doesn't it make sense? Why and when will we want to do this?
 }
 
 HistoryEntry implements EventEmitter;

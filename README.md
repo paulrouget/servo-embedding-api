@@ -279,3 +279,6 @@ Todo:
 - Dictionnaries don't use attributes!!!
 - Figure out how to describe events
 - maybe rename pipeline to "TopPipeline" or something. Because no access to inner pipelines, and maybe pipelines may get replaced (think reload())
+- maybe use "partial" instead of "implements"
+- choose between isXXX() and isXXX.
+- document all the "// Event: xxx"

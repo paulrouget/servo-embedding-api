@@ -3,11 +3,25 @@ typedef PreloadingPipelineID = long;
 // FIXME: this feels busy and not very "clear" how entries are added, removed…
 
 // This can be used for session restore
-[Constructor(Sequence<LoadData> entries, unsigned long activeIndex, boolean restoreAll, boolean private)]
+[Constructor(Sequence<LoadData> entries,
+             unsigned long activeIndex,
+             boolean restoreAll,
+             boolean privateBrowsing,
+             optional USVString contentBlockerURL)]
 interface BrowsingContext {
+
+  // We want to make sure attributes of browsing context and entries
+  // attributes don't overlap.
+
   readonly attribute FrozenList<HistoryEntry> historyEntries;
   readonly unsigned long activeEntryIndex;
-  boolean isPrivate(); // FIXME: Still don't know if this should be a bcontext, entry or pipeline attribute (part of pipeline in servo)
+
+  readonly attribute DOMString? userAgent; // FIXME: could it be set via prefs?
+  readonly attribute boolean privateBrowsing;
+  readonly attribute boolean isContentBlockingActive;
+  readonly attribute boolean isFocused; // Event: "focus-changed"
+  
+  // FIXME: should we manipulate indexes or HistoryEntry objects?
   void dropEntry(HistoryEntry);
   attribute boolean autoPurgePipelines; // Default yes
   attribute unsigned long historyToKeep; // Default 3
@@ -16,6 +30,9 @@ interface BrowsingContext {
   PreloadingPipelineID preloadPipeline((LoadData or USVString) init);
   void cancelPreloadingPipeline(PreloadingPipelineID id);
   void navigateToPreloadingPipeline(PreloadingPipelineID id);
+
+  readonly attribute boolean allowpopups;
+  readonly attribute JSON prefs; // FIXME: JSON type doesn't exist. Object does.
 }
 
 BrowsingContext implements EventEmitter;
