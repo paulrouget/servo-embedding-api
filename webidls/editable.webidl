@@ -1,3 +1,5 @@
+// FIXME: what about sub iframes?
+
 interface Editable {
   void undo();
   void redo();
@@ -12,7 +14,7 @@ interface Editable {
   void replaceMisspelling(DOMString text);
   void insertText(DOMString text);
 
-  readonly attribute EditState state; // Event: on-change.
+  readonly attribute EditState state; // Event: on-change. // FIXME: pipeline implements Editable. That means there will be a event name collision.
 }
 
 dictionary EditState {

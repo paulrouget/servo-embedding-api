@@ -9,6 +9,6 @@ interface EventEmitter {
 
 interface Event {
   const String type;
-  const boolean cancellable;
+  const boolean cancelable;
   void cancel();
 }

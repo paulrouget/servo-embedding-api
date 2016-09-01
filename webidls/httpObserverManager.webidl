@@ -9,7 +9,7 @@ FIXME
 // indicates socket connection to download the resource.
 dictionary DidGetResponseDetailsEventDetail {
   // type: ‘did-get-response-details’
-  // not cancellable
+  // not cancelable
   boolean status;
   Srting newURL;
   String originalURL;
@@ -23,7 +23,7 @@ dictionary DidGetResponseDetailsEventDetail {
 // Fired when a redirect was received while requesting a resource.
 dictionary DidGetRedirectRequestEventDetail {
   // type: ‘did-get-redirect-request’
-  // not cancellable
+  // not cancelable
   URL oldURL;
   String newURL;
   boolean isMainFrame;

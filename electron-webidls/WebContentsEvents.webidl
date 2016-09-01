@@ -4,7 +4,7 @@
 dictionary LoadCommitEventDetail {
   // type: "load-commit"
   // not in webContents
-  // not cancellable
+  // not cancelable
   URL url;
   boolean isMainFrame
 }
@@ -13,14 +13,14 @@ dictionary LoadCommitEventDetail {
 // spinning, and the onload event is dispatched.
 dictionary DidFinishLoadEventDetail {
   // type: "did-finish-load"
-  // not cancellable
+  // not cancelable
 }
 
 // This event is like did-finish-load, but fired when the load failed or was
-// cancelled, e.g. window.stop() is invoked.
+// canceled, e.g. window.stop() is invoked.
 dictionary DidFailLoadEventDetail {
   // type: ‘did-fail-load’
-  // not cancellable
+  // not cancelable
   Number errorCode;
   String errorDescription;
   String validatedURL;
@@ -30,7 +30,7 @@ dictionary DidFailLoadEventDetail {
 // Fired when a frame has done navigation.
 dictionary DidFrameFinishLoadEventDetail {
   // type: ‘did-frame-finish-load’
-  // not cancellable
+  // not cancelable
   boolean isMainFrame;
 }
 
@@ -38,7 +38,7 @@ dictionary DidFrameFinishLoadEventDetail {
 // spinning.
 dictionary DidStartLoadingEventDetail {
   // type: ‘did-start-loading’
-  // not cancellable
+  // not cancelable
 }
 
 
@@ -46,14 +46,14 @@ dictionary DidStartLoadingEventDetail {
 // spinning.
 dictionary DidStopLoadingEventDetail {
   // type: ‘did-stop-loading’
-  // not cancellable
+  // not cancelable
 }
 
 // Fired when details regarding a requested resource is available. status
 // indicates socket connection to download the resource.
 dictionary DidGetResponseDetailsEventDetail {
   // type: ‘did-get-response-details’
-  // not cancellable
+  // not cancelable
   boolean status;
   Srting newURL;
   String originalURL;
@@ -67,7 +67,7 @@ dictionary DidGetResponseDetailsEventDetail {
 // Fired when a redirect was received while requesting a resource.
 dictionary DidGetRedirectRequestEventDetail {
   // type: ‘did-get-redirect-request’
-  // not cancellable
+  // not cancelable
   URL oldURL;
   String newURL;
   boolean isMainFrame;
@@ -77,14 +77,14 @@ dictionary DidGetRedirectRequestEventDetail {
 // Fired when document in the given frame is loaded.
 dictionary DOMReadyEventDetail {
   // type: ‘dom-ready’
-  // not cancellable
+  // not cancelable
 }
 
 // Fired when page title is set during navigation. explicitSet is false when
 // title is synthesized from file url.
 dictionary PageTitleUpdatedEventDetail {
   // type: ‘page-title-updated’
-  // not cancellable
+  // not cancelable
   // not in webContents
   String title;
   boolean explicitSet;
@@ -94,7 +94,7 @@ dictionary PageTitleUpdatedEventDetail {
 // Fired when page receives favicon urls.
 dictionary PageFaviconUpdatedEventDetail {
   // type: ‘page-favicon-updated’
-  // not cancellable
+  // not cancelable
   URL[] favicons; // Array - Array of URLs.
 }
 
@@ -102,7 +102,7 @@ dictionary PageFaviconUpdatedEventDetail {
 dictionary EnterHTMLFullScreenEventDetail {
   // type: ‘enter-html-full-screen’
   // not in webContents
-  // cancellable?
+  // cancelable?
 }
 
 // Fired when page leaves fullscreen triggered by HTML API.
@@ -115,7 +115,7 @@ dictionary LeaveHTMLFullScreenEventDetail {
 dictionary ConsoleMessageEventDetail {
   // type: ‘console-message’
   // not in webContents
-  // not cancellable
+  // not cancelable
   Number level;
   String message;
   Number line;
@@ -141,7 +141,7 @@ enum WindowDisposition {
 // Fired when the guest page attempts to open a new browser window.
 dictionary NewWindowEventDetail {
   // type: ‘new-window’
-  // cancellable only for webContents
+  // cancelable only for webContents
   URL url;
   String frameName;
   WindowDisposition disposition;
@@ -158,7 +158,7 @@ dictionary NewWindowEventDetail {
 // purpose.  Calling event.preventDefault() does NOT have any effect.
 dictionary WillNavigateEventDetail {
   // type: ‘will-navigate’
-  // cancellable only for webContents
+  // cancelable only for webContents
   URL url;
 }
 
@@ -176,14 +176,14 @@ dictionary DidNavigateEventDetail {
 // the DOM hashchange event is triggered.
 dictionary DidNavigateInPageEventDetail {
   // type: ‘did-navigate-in-page’
-  // not cancellable
+  // not cancelable
   URL url;
 }
 
 // Fired when the guest page attempts to close itself.
 dictionary CloseEventDetail {
   // type: ‘close’
-  // cancellable?
+  // cancelable?
   // not in webContents
 }
 

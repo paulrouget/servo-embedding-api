@@ -34,3 +34,20 @@ dictionary MediaFlags {
   boolean canToggleControls;
   boolean canRotate;
 }
+
+
+// from Chrome:
+
+/*
+// Emitted when media starts playing.
+dictionary MediaStartedPlayingEventDetail {
+  // type: ‘media-started-playing’
+  // not in webContents
+}
+
+// Emitted when media is paused or done playing.
+dictionary MediaPausedEventDetail {
+  // type: ‘media-paused’
+  // not in webContents
+}
+*/

@@ -11,6 +11,13 @@ interface Rect {
   attribute unrestricted double height;
 };
 
+dictionary InputEvent {
+  // FIXME. Do we also want mouse events
+  // chrome:
+  // String type; // (required) - The type of the event, can be mouseDown, mouseUp, mouseEnter, mouseLeave, contextMenu, mouseWheel, mouseMove, keyDown, keyUp, char.
+  // String[] modifiers; // - An array of modifiers of the event, can include shift, control, alt, meta, isKeypad, isAutoRepeat, leftButtonDown, middleButtonDown, rightButtonDown, capsLock, numLock, left, right.
+}
+
 enum ViewportEventType { "visibilitychanged", "firstpaint" };
 
 dictionary ViewportEvent{
@@ -33,7 +40,11 @@ interface Viewport {
       forwardMouseEvents;
       scroll
       think embeeding in a game
+      gpucrash
+      cursorchanged // FIXME: is this the right place?
   */
+
+  Promise<boolean /* prevent default */> sendInputEvent(InputEvent);
 }
 
 interface HeadlessViewport {

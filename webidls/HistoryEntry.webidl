@@ -6,7 +6,6 @@ enum TransitionType {
 }
 
 interface HistoryEntry {
-
   readonly attribute String? title;
   readonly attribute USVString? url; // Get updated with redirections
 
@@ -18,10 +17,10 @@ interface HistoryEntry {
   readonly attribute unsigned long visitCount;
   readonly attribute unsigned long typedCount;
 
-  readonly attribute Pipeline? pipeline;
+  readonly attribute Pipeline? pipeline; // **Important**: multiple entries can refer to a single pipeline
   
   Promise<LoadData> getLoadData();
-  Promise<void> purgePipeline();
+  Promise<void> purgePipeline(); // Will only work if frozen
   Promise<Pipeline> restorePipeline(); // Doesn't it make sense? Why and when will we want to do this?
 }
 
@@ -29,27 +28,31 @@ HistoryEntry implements EventEmitter;
 
 interface HistoryEntryEvent_PipelineWillPurge : Event {
   // last chance to use pipeline (remove event listeners)
+  // This is blocking. Are we sure?
   const String type = "pipeline-will-purge";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
 }
 
 interface HistoryEntryEvent_PipelineRestored : Event {
   // pipeline is accessible
-  const String type = "pipeline-restored";
-  const boolean cancellable = false;
+  // Either restored (if going far back in the history)
+  // or swapped (in case of reload)
+  // or resetore via pipeline.restore()
+  const String type = "pipeline-created";
+  const boolean cancelable = false;
 }
 
 interface HistoryEntryEvent_Active : Event {
   const String type = "active";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
 }
 
 interface HistoryEntryEvent_Inactive : Event {
   const String type = "inactive";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
 }
 
 interface HistoryEntryEvent_Destroyed : Event {
   const String type = "destroyed";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
 }

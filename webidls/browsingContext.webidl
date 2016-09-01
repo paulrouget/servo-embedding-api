@@ -1,6 +1,7 @@
 typedef PreloadingPipelineID = long;
 
 // FIXME: this feels busy and not very "clear" how entries are added, removed…
+// FIXME: reload swaps pipelines
 
 // This can be used for session restore
 [Constructor(Sequence<LoadData> entries,
@@ -25,7 +26,7 @@ interface BrowsingContext {
   void dropEntry(HistoryEntry);
   attribute boolean autoPurgePipelines; // Default yes
   attribute unsigned long historyToKeep; // Default 3
-  void insertNewEntry(LoadData data, unsigned long index, boolean active); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
+  void insertNewEntry(LoadData data, unsigned long index, boolean active, PipelineID opener); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
 
   PreloadingPipelineID preloadPipeline((LoadData or USVString) init);
   void cancelPreloadingPipeline(PreloadingPipelineID id);
@@ -45,7 +46,7 @@ interface BrowsingContext_EntriesChanged : Event {
   // Maybe we want to only allow atomic operations with corresponding events:
   // "new-entry" and "entry-dropped" and "splice(…)"
   const String type = "entries-changed";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
 }
 
 interface BrowsingContext_ActiveEntryChanged: Event {
@@ -55,7 +56,19 @@ interface BrowsingContext_ActiveEntryChanged: Event {
   // FIXME: is that actually necessary? The consumer is supposed to
   // track any new entry and track if these turns active / inactive.
   const String type = "active-entry-changed";
-  const boolean cancellable = false;
+  const boolean cancelable = false;
+}
+
+interface BrowsingContextWillNavigateEvent : BrowsingContextEvent { // FIXME: see PipelineEvent
+  const DOMString name = "will-navigate";
+  const boolean cancelable = true;
+  USVString url;
+}
+
+interface BrowsingContextWillCloseEvent: BrowsingContext {
+  // FIXME: should that be a pipeline event?
+  const DOMString name = "will-close";
+  const boolean cancelable = true;
 }
 
 // FIXME: can it be destroyed? Are we missing "destroyed" event?

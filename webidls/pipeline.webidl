@@ -10,18 +10,25 @@ dictionary MetaTag {
 enum DocumentState {
   "pending", // Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive
   "error", // Couldn't complete connection. 
+  "crash", // Pipeline crashed
   // Following values are the same as document.readyState
   "loading", // The document is still loading. (same as document.readyState)
   "interactive", // The document has finished loading and the document has been parsed but sub-resources such as images, stylesheets and frames are still loading. (same as document.readyState)
   "complete", // The document and all sub-resources have finished loading. The state indicates that the load event has been fired. (same as document.readyState)
 }
 
-dictionary LoadError {
+enum SaveType {
+  "HTMLOnly", // Save only the HTML of the page.
+  "HTMLComplete", // Save complete-html page.
+  "MHTML", // Save complete-html page as MHTML.
+}
+
+dictionary LoadError { // Also used for crash reports
   USVString finalURL;
   // Chrome error list: https://cs.chromium.org/chromium/src/net/base/net_error_list.h
-  unsigned short errorCode;
-  // should include crash as well
-  DOMString errorDescription;
+  unsigned short code;
+  DOMString description; // Human readable
+  optional DOMString report; // Backtrace for panics
 }
 
 enum SaveRenderingStrategy {
@@ -60,7 +67,14 @@ interface Pipeline {
   void reload(); // FIXME: will that create a new pipeline? https://github.com/servo/servo/issues/13123
   void clearCacheAndReload();
 
+  Promise<Blob> downloadURL(USVString url); // FIXME: HTTPObserver
+
   Promise<void> insertCSS(DOMString code);
+
+  Promise<Blob> capturePage(Rect source, Rect destination); // Works even for frozen pipelines
+
+  Promise<void> savePage(DOMString fullPath, SaveType saveType);
+
 
   // FIXME: what about WebContents::session?
 
@@ -73,7 +87,7 @@ interface Pipeline {
   // FIXME: next: cover WebContents.webidl
 
   // FIXME:
-  readonly attribute LoadError loadError; // document-state-changed -> documentState == "error".
+  readonly attribute Error error; // document-state-changed -> documentState == "error" || "crash". // FIXME: is "crash" necessary?
   // pipeline health: crash or not
   // connection health: connection to http server success?
   // http health: status code
@@ -116,7 +130,7 @@ interface Pipeline {
     dictionary ConsoleMessageEventDetail {
       // type: ‘console-message’
       // not in webContents
-      // not cancellable
+      // not cancelable
       Number level;
       String message;
       Number line;
@@ -125,8 +139,73 @@ interface Pipeline {
 
 
   */
+
+  void on(DOMString eventname, PipelineEventCallback callback);
+  void off(DOMString eventname, PipelineEventCallback callback);
+  void removeAllListeners();
+  Promise<PipelineEventDetail> once (PipelineEvent event, optional PipelineEventCallback callback);
   
 }
+
+interface PipelineEvent {
+  const DOMString name;
+  const boolean cancelable;
+  readonly attribute boolean canceled;
+  void cancel();
+}
+
+enum WindowDisposition {
+  "foreground-tab",
+  "background-tab",
+  "new-window";
+}
+
+interface PipelineNewWindowEvent : PipelineEvent {
+  const DOMString name = "new-window";
+  const boolean cancelable = true;
+
+  WindowDisposition disposition;
+  boolean setReferrer; // When creating new window, use this pipeline's url as the referrer
+  boolean setOpener; // When creating new window, use this pipeline as the opener
+  DOMString frameName;
+}
+
+interface PipelineCrashEvent : PipelineEvent {
+  // FIXME: is it necessary as documentState changed to "crash"?
+  const DOMString name = "crash";
+  const boolean cancelable = false;
+  // See pipeline.loadError
+};
+
+
+interface PipelineContextMenuEvent : PipelineEvent {
+  const DOMString name = "context-menu";
+  const boolean cancelable = false;
+
+  // FIXME: overlap with editable
+
+  long x; // x coordinate
+  long y; // - y coordinate
+  USVString linkURL; // - URL of the link that encloses the node the context menu was invoked on.
+  USVString linkText; // - Text associated with the link. May be an empty string if the contents of the link are an image.
+  USVString frameURL; // - URL of the subframe that the context menu was invoked on.
+  USVString srcURL; // - Source URL for the element that the context menu was invoked on. Elements with source URLs are images, audio and video.
+  DOMString mediaType; // - Type of the node the context menu was invoked on. Can be none, image, audio, video, canvas, file or plugin.
+  boolean hasImageContents; // - Whether the context menu was invoked on an image which has non-empty contents.
+  boolean isEditable; // - Whether the context is editable.
+  DOMString selectionText; // - Text of the selection that the context menu was invoked on. // FIXME: is that necessary? As pipeline implement Editable, this information is accessible. But what about iframes…
+  DOMString titleText; // - Title or alt text of the selection that the context was invoked on.
+  DOMString misspelledWord; // - The misspelled word under the cursor, if any. // FIXME: editable again
+  DOMString frameCharset; // - The character encoding of the frame on which the menu was invoked.
+  DOMString inputFieldType; // - If the context menu was invoked on an input field, the type of that field. Possible values are none, plainText, password, other.
+  DOMString menuSourceType; // - Input source that invoked the context menu. Can be none, mouse, keyboard, touch, touchMenu.
+  MediaFlags mediaFlags; // - The flags for the media element the context menu was invoked on. See more about this below.
+  EditFlags editFlags; // - These flags indicate whether the renderer believes it is able to perform the corresponding action. See more about this below.
+};
+
+
+typedef PipelineEventCallback = void (PipelineEventDetail);
+
 
 Pipeline implements Searchable;
 Pipeline implements HttpObserverManager;

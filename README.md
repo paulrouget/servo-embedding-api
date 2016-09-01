@@ -121,7 +121,7 @@ This is for later, but this is the kind of DOM API we want to be able to build o
 - same for the frozen pipeline rendering
 - we will need DOM mutation
 - will need to make it clear what is readonly/read-n-write
-- events can be cancelled, so we keep event.details, and update the element property once event has succesfuly propagated (if cancelable)
+- events can be canceled, so we keep event.details, and update the element property once event has succesfuly propagated (if cancelable)
 - Event propagation / delegation should be specified. Ex: https://github.com/browserhtml/browserhtml/issues/317
     - forcetouch, escape issue
 
@@ -182,7 +182,7 @@ FIXME
 - tweak overscroll
 - devtools integration
 - sharing setting with content?
-- can we set referer/openner when creating a pipeline? Probably not necessary (as pipeline are creatd internally), but would that help in any way?
+- can we set referer/opener when creating a pipeline? Probably not necessary (as pipeline are creatd internally), but would that help in any way?
 - how to build extensions like adblock and video download helper?
 
 
@@ -282,3 +282,6 @@ Todo:
 - maybe use "partial" instead of "implements"
 - choose between isXXX() and isXXX.
 - document all the "// Event: xxx"
+- scenario: open popup. How would that work? (think impots.gouv.fr)
+- how will this play out with /ports? For example, cursorIcon?
+- maybe we should abstract pipeline under HistoryEntry. What's the point of keeping pipeline?
