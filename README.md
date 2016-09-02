@@ -22,7 +22,7 @@ The main goals of this API are:
 
 ## Servo overview
 
-In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document). Frames contain a sorted set of pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids. Pipelines and frames live in a constellation, the "Command Control" that passes messages to pipelines.
+In Servo, documents are also called pipelines. Pipelines contain a set of frames (can be seen as the list of iframes within a document). Frames contain a sorted set of pipelines (these pipelines represent the history entries). Pipelines and frames are referenced via ids. Pipelines and frames are accessible in a constellation, the "Command Control" that passes messages to pipelines.
 
 ### pipeline
 
@@ -51,7 +51,6 @@ In Servo, documents are also called pipelines. Pipelines contain a set of frames
 
 ### constellation
 
-- where pipelines live
 - a list of all the frames
 - a list of all the pipelines
 
@@ -284,4 +283,13 @@ Todo:
 - document all the "// Event: xxx"
 - scenario: open popup. How would that work? (think impots.gouv.fr)
 - how will this play out with /ports? For example, cursorIcon?
-- maybe we should abstract pipeline under HistoryEntry. What's the point of keeping pipeline?
+- maybe we should abstract pipeline under HistoryEntry. What's the point of keeping pipeline? Should it happen/
+- swipping for history + anchor link
+
+- History implementation delegation:
+  - how to delegate history tree/vector to JS in a performant way
+    - maybe save the entries all along (not drop if goback then navigate)
+  - Pipeline without history at all?
+  - Why is BrowsingContext called BrowsingContext and not "HistoryEntries"
+  - Why can't we *not* use Servo implementation of history entries and let user land handle the entries
+  - how that would work with that: https://github.com/servo/servo/issues/13150
