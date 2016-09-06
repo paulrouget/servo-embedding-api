@@ -26,8 +26,6 @@ interface Editable {
   void replace(DOMString text);
   void replaceMisspelling(DOMString text);
   void insertText(DOMString text);
-
-  readonly attribute EditState state; // Event: on-editable-change.
 }
 
 Editable implements EventEmitter;
