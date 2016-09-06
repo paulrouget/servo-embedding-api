@@ -3,14 +3,6 @@
  * Servo internals will need more info.
  */
 
-dictionary InputEvent {
-  // FIXME. Do we also want mouse events
-  // chrome:
-  // String type; // (required) - The type of the event, can be mouseDown, mouseUp, mouseEnter, mouseLeave, contextMenu, mouseWheel, mouseMove, keyDown, keyUp, char.
-  // String[] modifiers; // - An array of modifiers of the event, can include shift, control, alt, meta, isKeypad, isAutoRepeat, leftButtonDown, middleButtonDown, rightButtonDown, capsLock, numLock, left, right.
-}
-
-
 // We want to dissociate clipping area and content boundaries.
 // 
 // A typical scenario is a mobile browser, where a toolbar is half transparent,
@@ -62,58 +54,108 @@ dictionary InputEvent {
 // the viewport. Example: Bounds A leave enough space above the content to draw
 // a half transparent 100px tall toolbar. Bounds B leave 20px, and we want then
 // the toolbar to be fully opaque.  if A, toolbar {opacity:0.5;height:100px} if
-// B, toolbar {opacity:1;transform:scaleY(0.2)} If bounds are in an
+// B, toolbar {opacity:1;transform:scaleY(0.2)}. If bounds are in an
 // intermediate step between A and B (because user is scrolling or because
 // bounds are switched and animated programatically), we want the toolbar
 // properties to change according.  This needs to be done in at the compositor
-// level: FIXME (houdini? re-use key-frames somehow? web-animations-like API?)
+// level. We will rely on Houdini worklets, introducing bounds-specific properties.
+// In the CompositorWorker, viewport exposes:
+//   boundsSwitchDirection (vertical or horizontal) currentBoundsIndex,
+//   targetBoundsIndex (-1 if none), boundsTransitionProgress (0..1).
+// Using these values, it's possible to animate the accelerated properties of the toolbar.
+
+// FIXME: it would be easier not have the vertical/horizontal split, but it makes
+// it easier to understand how bounds chain when switching is driven by scroll.
 
 dictionary ViewportBounds {
-  long start;
-  long end;
-  boolean isReachableViaVerticalScrolling;
+  unsigned long start; // pixels from top/left frame border
+  unsigned long end; // pixels from right/bottom frame border
+  boolean isReachableViaScrolling;
   long snapDistance;
+}
+
+enum BoundsSwitchDirection {
+  "vertical",
+  "horizontal",
 }
 
 interface Viewport {
 
-  readonly attribute boolean isHeadless;
-  readonly attribute DOMRect frameRect; // See DOMRect.webidl.
-
-
-  readonly attribute boolean isOverscrollEnabled; // Set in constructor
-
-  // just hint to tell the engine that the document is not on screen, timers
-  // can slow down and requestAnimationFrame doesn't need to be called.
-  readonly attribute boolean isVisible;
-
+  readonly attribute boolean isHeadless; // Set at construction
+  readonly attribute boolean isGPUCrashed;
+  readonly attribute boolean isOverscrollEnabled; // Set set construction
   readonly attribute boolean isFocused; // No setter. Implementation specific.
 
-  // Bounds: 
-  readonly attribute FrozenList<Bounds> verticalBoundsList;
-  readonly attribute FrozenList<Bounds> horizontalBoundsList;
-  // See also https://drafts.csswg.org/css-transitions-1/#single-transition-timing-function
-  void switchBounds(unsigned long verticalBoundsIndex, unsigned long horizontalBoundsIndex,
-                    DOMPoint translateContent, long duration, String transitionTimingFunction);
+  readonly attribute DOMRect frameRect; // See DOMRect.webidl.
 
-  void setVisible(boolean visible);
+  // just a hint to tell the engine that the document is not on screen, timers
+  // can slow down and requestAnimationFrame doesn't need to be called.
+  readonly attribute boolean isVisible;
+  Promise<void> setVisible(boolean visible);
+
+  // Bounds: 
+  readonly attribute FrozenList<ViewportBounds> horizontalBoundsList;
+  readonly attribute FrozenList<ViewportBounds> verticalBoundsList;
+  readonly attribute unsigned long horizontalBoundsIndex;
+  readonly attribute unsigned long verticalBoundsIndex;
+
+  // See also https://drafts.csswg.org/css-transitions-1/#single-transition-timing-function
+  Promise<void> switchBounds(unsigned long verticalBoundsIndex, unsigned long horizontalBoundsIndex,
+                             DOMPoint translateContent, long duration, String transitionTimingFunction);
+
 
   Promise<boolean /* default prevented */> sendInputEvent(InputEvent); // FIXME: only key events?
 
 
+}
 
-  /* events:
-      onboundchanged
-      onvisibylitychanged;
-      onfocuschanged
-      onfirstpaint; // FIXME: Doesn't really make sense here. Should be on pipeline pending -> not pending
-      onscroll // FIXME: no. Not needed.
-      ongpucrash
-      oncursorchanged // FIXME: is this the right place? Aren't we replacing ports/ at this point?
-  */
-
+dictionary InputEvent {
+  // FIXME. Do we also want mouse events?
+  // chrome:
+  // String type; // (required) - The type of the event, can be mouseDown, mouseUp, mouseEnter, mouseLeave, contextMenu, mouseWheel, mouseMove, keyDown, keyUp, char.
+  // String[] modifiers; // - An array of modifiers of the event, can include shift, control, alt, meta, isKeypad, isAutoRepeat, leftButtonDown, middleButtonDown, rightButtonDown, capsLock, numLock, left, right.
 }
 
 interface HeadlessViewport : Viewport {
-  
+  readonly attribute unsigned short frameRate;
+  void setFrameRate(unsigned short);
 }
+
+interface ViewportEvent {
+  const DOMString name;
+  const boolean cancelable = false; // All event are not cancelable so far
+}
+
+interface ViewportBoundsSwitchedEvent : ViewportEvent {
+  const DOMString name = "bounds-switched";
+  unsigned long oldBoundIndex;
+  unsigned long newBoundIndex;
+  BoundsSwitchDirection direction;
+}
+
+interface ViewportVisibilityChangedEvent : ViewportEvent {
+  const DOMString name = "visibility-changed";
+  // viewport.isVisible has been set to the new value
+}
+
+interface ViewportFocusChangedEvent : ViewportEvent {
+  const DOMString name = "focus-changed";
+  // viewport.isFocused has been set to the new value
+}
+
+interface ViewportGPUCrashEvent: ViewportEvent {
+  const DOMString name = "gpu-crashed";
+  // viewport.isGPUCrashed has been set to the new value
+}
+
+interface ViewportFrameRateChangedEvent: ViewportEvent {
+  const DOMString name = "frame-rate-changed";
+  // Only for headless viewport
+  // viewport.frameRate has been set to the new value
+}
+
+
+// FIXME:
+//  onfirstpaint; // FIXME: Doesn't really make sense here. Should be on pipeline pending -> not pending
+//  onscroll // FIXME: no. Not needed.
+//  oncursorchanged // FIXME: is this the right place? Aren't we replacing ports/ at this point?
