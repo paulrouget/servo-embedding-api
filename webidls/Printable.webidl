@@ -1,10 +1,10 @@
-enum MarginsType {
+enum PrintMarginsType {
   "default",
   "no-margin",
   "minimum-margin",
 }
 
-enum PageSizePreset {
+enum PrintPageSizePreset {
   "A3",
   "A4",
   "A5",
@@ -13,17 +13,22 @@ enum PageSizePreset {
   "Tabloid",
 }
 
-dictionary PageSize {
+enum PrintOrientation {
+  "landscape",
+  "portrait",
+}
+
+dictionary PrintPageSize {
   unsigned long width, // microns
   unsigned long height,
 }
 
 dictionary PrintOptions {
   MarginsType marginsType;
-  (PageSize or PageSizePreset) pageSize;
-  boolean printBackground; // Whether to print CSS backgrounds.
-  boolean printSelectionOnly; // Whether to print selection only.
-  boolean landscape; // true for landscape, false for portrait. 
+  (PrintPageSize or PrintPageSizePreset) pageSize;
+  PrintOrientation orientation;
+  boolean doPrintBackground; // Whether to print CSS backgrounds.
+  boolean doPrintSelectionOnly; // Whether to print selection only.
 }
 
 interface Printable {

@@ -39,6 +39,13 @@ enum SaveRenderingStrategy {
 
 interface Pipeline {
 
+  readonly attribute boolean isMixedContentAllowed; // Default set via LoadData
+  readonly attribute boolean isTrackingContentAllowed; // Default set via LoadData
+
+  // FIXME: related events:
+  Promise<void> setMixedContentAllowed(boolean allowed);
+  Promise<void> setTrackingContentAllowed(boolean allowed);
+
   readonly attribute USVString url; // Event: url-changed. Happens during redirects for example. FIXME: should that be finalURL ? How often would that change?
   readonly attribute DOMString title; // Event: title-changed
   readonly attribute unsigned short HTTPResponse;
@@ -63,7 +70,7 @@ interface Pipeline {
   readonly attribute SaveRenderingStrategy saveRenderingStrategy;
   Promise<void> setSaveRenderingStrategy(SaveRenderingStrategy);
 
-  void stopLoad();
+  void stop();
   void reload(); // FIXME: will that create a new pipeline? https://github.com/servo/servo/issues/13123
   void clearCacheAndReload();
 
@@ -147,12 +154,9 @@ interface Pipeline {
   
 }
 
-interface PipelineEvent {
-  const DOMString name;
-  const boolean cancelable;
-  readonly attribute boolean canceled;
-  void cancel();
-}
+Pipline implements EventEmitter;
+
+interface PipelineEvent : CancelableEvent { };
 
 enum WindowDisposition {
   "foreground-tab",
@@ -202,9 +206,6 @@ interface PipelineContextMenuEvent : PipelineEvent {
   MediaFlags mediaFlags; // - The flags for the media element the context menu was invoked on. See more about this below.
   EditFlags editFlags; // - These flags indicate whether the renderer believes it is able to perform the corresponding action. See more about this below.
 };
-
-
-typedef PipelineEventCallback = void (PipelineEventDetail);
 
 
 Pipeline implements Searchable;

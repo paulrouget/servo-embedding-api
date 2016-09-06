@@ -12,6 +12,8 @@ interface HistoryEntry {
   readonly attribute TransitionType transitionType;
   readonly attribute boolean isPipelineAlive; // equivalent of entry.pipeline != null
 
+  readonly attribute DOMString userEntry; // What ever lead the user to load this entry.
+
   // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
   readonly attribute DOMTimeStamp lastVisitTime;
   readonly attribute unsigned long visitCount;
@@ -19,9 +21,11 @@ interface HistoryEntry {
 
   readonly attribute Pipeline? pipeline; // **Important**: multiple entries can refer to a single pipeline
   
-  Promise<LoadData> getLoadData();
+  Promise<LoadData> getLoadData(); // Not a copy of the initial load data. Compiled from live pipeline.
   Promise<void> purgePipeline(); // Will only work if frozen
   Promise<Pipeline> restorePipeline(); // Doesn't it make sense? Why and when will we want to do this?
+
+  Promise<Blob> serializeLoadData(); // Used to save to disk
 }
 
 HistoryEntry implements EventEmitter;
@@ -55,4 +59,6 @@ interface HistoryEntryEvent_Inactive : Event {
 interface HistoryEntryEvent_Destroyed : Event {
   const String type = "destroyed";
   const boolean cancelable = false;
+  LoadData loadData; // useful to have if restore is needed for later
+  // FIXME: is this loadData sufficient for a book keeping of history as a graph?
 }

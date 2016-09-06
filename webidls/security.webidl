@@ -1,21 +1,21 @@
 dictionary ConnectionSecurity {
-  readonly attribute CertificateInfo? certificateInfo;
-  readonly attribute ConnectionSecurityType state;
+  CertificateInfo? certificateInfo = null;
+  ConnectionSecurityState state;
 
   // Organization name has been verified, not just the domain.
   // Marks the difference from a green lock and a green lock + org name.
-  readonly boolean attribute isExtendedValidation;
+  boolean isExtendedValidation;
+
+  // mixedContent and trackingPolicy are set at pipeline creation
 
   // See: https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
-  readonly attribute boolean mixedContentAllowed; // FIXME: where is this set?
-  readonly attribute boolean mixedContentLoaded;
-  readonly attribute boolean mixedContentBlocked;
+  boolean isMixedContentLoaded;
+  boolean isMixedContentBlocked;
 
   // tracking content: content loaded from domains that track users across sites.
   // See: https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection
-  readonly attribute boolean trackingContentAllowed; // FIXME: where is this set?
-  readonly attribute boolean trackingContentLoaded;
-  readonly attribute boolean trackingContentBlocked;
+  boolean isTrackingContentLoaded;
+  boolean isTrackingContentBlocked;
 };
 
 enum ConnectionSecurityState {
@@ -32,14 +32,14 @@ enum ConnectionSecurityState {
 };
 
 dictionary CertificateInfo {
-  readonly attribute DOMString commonName;
-  readonly attribute DOMString organization;
-  readonly attribute DOMString organizationalUnit;
-  readonly attribute DOMString issuerCommonName;
-  readonly attribute DOMString issuerOrganization;
-  readonly attribute DOMString issuerOrganizationUnit;
-  readonly attribute DOMString sha256Fingerprint;
-  readonly attribute DOMString sha1Fingerprint;
-  readonly attribute DOMString validnotBeforeLocalDay;
-  readonly attribute DOMString validNotAfterLocalDay;
+  DOMString commonName;
+  DOMString organization;
+  DOMString organizationalUnit;
+  DOMString issuerCommonName;
+  DOMString issuerOrganization;
+  DOMString issuerOrganizationUnit;
+  DOMString sha256Fingerprint;
+  DOMString sha1Fingerprint;
+  DOMString validnotBeforeLocalDay;
+  DOMString validNotAfterLocalDay;
 };

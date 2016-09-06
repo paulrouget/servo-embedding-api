@@ -23,4 +23,5 @@ interface Searchable {
   readonly attribute unsigned long matchIndex;
   readonly attribute unsigned long numberOfMatches;
   attribute long findLimit; // -1: no limits
+
 }

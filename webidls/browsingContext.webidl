@@ -15,7 +15,7 @@ interface BrowsingContext {
   // attributes don't overlap.
 
   readonly attribute FrozenList<HistoryEntry> historyEntries;
-  readonly unsigned long activeEntryIndex;
+  readonly attribute unsigned long activeEntryIndex;
 
   readonly attribute DOMString? userAgent; // FIXME: could it be set via prefs?
   readonly attribute boolean privateBrowsing;

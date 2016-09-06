@@ -109,6 +109,8 @@ interface Viewport {
 
 }
 
+Viewport implements EventEmitter;
+
 dictionary InputEvent {
   // FIXME. Do we also want mouse events?
   // chrome:
@@ -121,9 +123,8 @@ interface HeadlessViewport : Viewport {
   void setFrameRate(unsigned short);
 }
 
-interface ViewportEvent {
+interface ViewportEvent : Event {
   const DOMString name;
-  const boolean cancelable = false; // All event are not cancelable so far
 }
 
 interface ViewportBoundsSwitchedEvent : ViewportEvent {
