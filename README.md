@@ -285,6 +285,7 @@ Todo:
 - how will this play out with /ports? For example, cursorIcon?
 - maybe we should abstract pipeline under HistoryEntry. What's the point of keeping pipeline? Should it happen/
 - swipping for history + anchor link
+- offer access to inner pipeline
 
 - History implementation delegation:
   - how to delegate history tree/vector to JS in a performant way

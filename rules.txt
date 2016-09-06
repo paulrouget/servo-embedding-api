@@ -1,0 +1,3 @@
+- all attribute are readonly
+- use function for setter
+- boolean attributes start with isXXX or doesXXX
