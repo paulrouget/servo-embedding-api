@@ -16,7 +16,7 @@ interface Editable {
 
   void undo();
   void redo();
-  void cut();
+  Promise<void> cut();
   void copy();
   void paste();
   void pasteAndMatchStyle();
