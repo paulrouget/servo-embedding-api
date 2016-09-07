@@ -1,3 +1,13 @@
 - all attribute are readonly
 - use function for setter
-- boolean attributes start with isXXX or doesXXX
+- boolean attributes start with isXXX or doXXX
+
+- events name should use passed tense if it happened
+
+- setter fire events and return promises
+
+- interface name for an event is camel case:
+  Interface name + event name with no dashes + "Event"
+  example: "ViewportVisibilityChangedEvent"
+
+- cancelable, not cancellable

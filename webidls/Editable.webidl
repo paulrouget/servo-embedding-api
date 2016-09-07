@@ -1,10 +1,13 @@
 interface Editable {
 
+  // This is usually used to build the application Edit menu.
+
   // FIXME: pipeline implements Editable.
   // That means there will be a event name collision.
+  // Maybe use as asEditable()
 
-  readonly attribute boolean isEditable;
   readonly attribute DOMString selectionText;
+  readonly attribute boolean isEditable;
   readonly attribute boolean canUndo;
   readonly attribute boolean canRedo;
   readonly attribute boolean canCut;
@@ -13,10 +16,9 @@ interface Editable {
   readonly attribute boolean canDelete;
   readonly attribute boolean canSelectAll;
 
-
   void undo();
   void redo();
-  Promise<void> cut();
+  void cut();
   void copy();
   void paste();
   void pasteAndMatchStyle();
@@ -26,10 +28,15 @@ interface Editable {
   void replace(DOMString text);
   void replaceMisspelling(DOMString text);
   void insertText(DOMString text);
+
 }
 
 Editable implements EventEmitter;
 
-interface OnEditableChange: Event {
-  const DOMString name = "editable-changed";
+interface EditableChangedEvent: Event {
+  const DOMString name = "changed";
+}
+
+interface EditableDestroyEvent: Event {
+  const DOMString name = "changed";
 }

@@ -40,7 +40,9 @@
 // scroll event.
 //
 // Switching bounds can be done programatically. But we also want this to be
-// doable on scroll. If panning can be translated into a translation toward
+// doable on scroll.
+// FIXME: maybe the scrolling part should be done in a CompositorWorker!
+// If panning can be translated into a translation toward
 // the next set of reachable bounds, bounds should be animated as so. If the
 // panning is released close enough to the bounds (snapDistance), bounds switch happens.
 // If not, bounds is reset to initial value and scroll events are triggered
@@ -90,8 +92,6 @@ interface Viewport {
 
   // just a hint to tell the engine that the document is not on screen, timers
   // can slow down and requestAnimationFrame doesn't need to be called.
-  readonly attribute boolean isVisible;
-  Promise<void> setVisible(boolean visible);
 
   // Bounds: 
   readonly attribute FrozenList<ViewportBounds> horizontalBoundsList;
@@ -107,6 +107,19 @@ interface Viewport {
   Promise<boolean /* default prevented */> sendInputEvent(InputEvent); // FIXME: only key events?
 
 
+}
+
+interface ViewportCompositorProxy {
+  readonly attribute boolean canScrollLeft;
+  readonly attribute boolean canScrollRight;
+  readonly attribute boolean canScrollTop;
+  readonly attribute boolean canScrollBottom;
+
+  // FIXME:
+  // Events on scroll / bounds changes
+  // we need to be edit bounds here as well
+  // Support gestures
+  
 }
 
 Viewport implements EventEmitter;

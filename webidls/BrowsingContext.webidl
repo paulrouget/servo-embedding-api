@@ -26,11 +26,16 @@ interface BrowsingContext {
   void dropEntry(HistoryEntry);
   attribute boolean autoPurgePipelines; // Default yes
   attribute unsigned long historyToKeep; // Default 3
-  void insertNewEntry(LoadData data, unsigned long index, boolean active, PipelineID opener); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
+
+  void insertNewEntry(LoadData data, /*unsigned long index, FIXME: necessary? */ boolean active, PipelineID opener); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
 
   PreloadingPipelineID preloadPipeline((LoadData or USVString) init);
   void cancelPreloadingPipeline(PreloadingPipelineID id);
   void navigateToPreloadingPipeline(PreloadingPipelineID id);
+
+  // Not getter. This will affect all the inner pipelines.
+  // FIXME: relation with Viewport?
+  void setVisible(boolean visible);
 
   readonly attribute boolean allowpopups;
   readonly attribute JSON prefs; // FIXME: JSON type doesn't exist. Object does.

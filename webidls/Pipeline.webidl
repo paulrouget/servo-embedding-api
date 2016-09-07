@@ -9,6 +9,7 @@ dictionary MetaTag {
 
 enum DocumentState {
   "pending", // Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive
+  // FIXME: there will be a redirect, so these will never happen
   "error", // Couldn't complete connection. 
   "crash", // Pipeline crashed
   // Following values are the same as document.readyState
@@ -53,7 +54,7 @@ interface Pipeline {
   // Used to replace mozbrowserconnected, mozbrowserloadstart, mozbrowserloadend
   // Use performance for time stamps.
   readonly attribute DocumentState? documentState; // Event: document-state-changed. Undefined if isPending or connection error. See Document.webidl
-  readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl
+  readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl // FIXME: should probably be getPerformance()
 
   readonly attribute FrozenList<USVString> icons; // Event: icons-changed
   readonly attribute FrozenList<MetaTag> metas; // Event: metas-changed. only <meta name="…" content="…">
@@ -61,6 +62,8 @@ interface Pipeline {
   readonly attribute ConnectionSecurity connectionSecurity; // Event: security-changed
 
   readonly attribute boolean isFrozen; // Event: freeze and thaw. Pipeline has been frozen. The user navigated away for example.
+
+  readonly attribute boolean isVisible; // Event: "visibility". Set from BrowsingContext
 
   readonly attribute unsigned float devicePixelRatio; // Event: device-pixel-ratio-changed
 
@@ -71,7 +74,7 @@ interface Pipeline {
   Promise<void> setSaveRenderingStrategy(SaveRenderingStrategy);
 
   void stop();
-  void reload(); // FIXME: will that create a new pipeline? https://github.com/servo/servo/issues/13123
+  void reload(); // Will destroy that pipeline and create a new one
   void clearCacheAndReload();
 
   Promise<Blob> downloadURL(USVString url); // FIXME: HTTPObserver

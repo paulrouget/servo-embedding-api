@@ -35,4 +35,3 @@ interface Printable {
   Promise<void> print(PrintOptions options);
   Promise<void> printToPDF(PrintOptions options);
 }
-

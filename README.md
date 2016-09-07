@@ -286,6 +286,11 @@ Todo:
 - maybe we should abstract pipeline under HistoryEntry. What's the point of keeping pipeline? Should it happen/
 - swipping for history + anchor link
 - offer access to inner pipeline
+- rename pipeline -> topPipeline or something like that
+
+- Maybe instead of pipeline, PAGE -> asPipeline(), asEditable(), asPrintable() …
+
+- use events, do bookkeeping user land maybe?
 
 - History implementation delegation:
   - how to delegate history tree/vector to JS in a performant way
