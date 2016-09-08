@@ -11,25 +11,28 @@ typedef PreloadingPipelineID = long;
              optional USVString contentBlockerURL)]
 interface BrowsingContext {
 
+  // FIXME: I removed the ability to edit the entries array.
+  // It's probably smarted to keep BrowsingContext as readonly,
+  // and have the ability to attach a "History Organizer" that
+  // would handle pipeline/entries sorting.
+
   // We want to make sure attributes of browsing context and entries
   // attributes don't overlap.
 
   readonly attribute FrozenList<HistoryEntry> historyEntries;
-  readonly attribute unsigned long activeEntryIndex;
+  readonly attribute unsigned long activeEntryIndex; // FIXME: event
 
   readonly attribute DOMString? userAgent; // FIXME: could it be set via prefs?
-  readonly attribute boolean privateBrowsing;
+  readonly attribute boolean isPrivateBrowsing;
   readonly attribute boolean isContentBlockingActive;
   readonly attribute boolean isFocused; // Event: "focus-changed"
-  
-  // FIXME: should we manipulate indexes or HistoryEntry objects?
-  void dropEntry(HistoryEntry);
-  attribute boolean autoPurgePipelines; // Default yes
-  attribute unsigned long historyToKeep; // Default 3
+  readonly attribute boolean autoPurgePipelines; // Default yes // FIXME: where is it set?
+  readonly attribute unsigned long historyToKeep; // Default 3 // FIXME: where is it set?
 
-  void insertNewEntry(LoadData data, /*unsigned long index, FIXME: necessary? */ boolean active, PipelineID opener); // Use to load a new URL. will create a new pipeline // FIXME: or maybe URL? What's the point of using LoadData if it can only be constructed from URL?
+  // Use to load a new URL. will create a new pipeline
+  void navigate(LoadData loadData, boolean active, PipelineID opener);
 
-  PreloadingPipelineID preloadPipeline((LoadData or USVString) init);
+  PreloadingPipelineID preloadPipeline(LoadData loadData);
   void cancelPreloadingPipeline(PreloadingPipelineID id);
   void navigateToPreloadingPipeline(PreloadingPipelineID id);
 
@@ -37,7 +40,7 @@ interface BrowsingContext {
   // FIXME: relation with Viewport?
   void setVisible(boolean visible);
 
-  readonly attribute boolean allowpopups;
+  readonly attribute boolean allowpopups; // FIXME: Why doesn't that look like isContentBlockingActive & co?
   readonly attribute JSON prefs; // FIXME: JSON type doesn't exist. Object does.
 }
 

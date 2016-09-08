@@ -292,6 +292,8 @@ Todo:
 
 - use events, do bookkeeping user land maybe?
 
+- make sure we get right spec for https://github.com/browserhtml/browserhtml/issues/982 && https://github.com/browserhtml/browserhtml/issues/1247
+
 - History implementation delegation:
   - how to delegate history tree/vector to JS in a performant way
     - maybe save the entries all along (not drop if goback then navigate)

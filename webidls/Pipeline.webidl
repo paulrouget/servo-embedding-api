@@ -174,6 +174,7 @@ interface PipelineNewWindowEvent : PipelineEvent {
   WindowDisposition disposition;
   boolean setReferrer; // When creating new window, use this pipeline's url as the referrer
   boolean setOpener; // When creating new window, use this pipeline as the opener
+  // FIXME: here we should have a LoadData, not referrer & co
   DOMString frameName;
 }
 
