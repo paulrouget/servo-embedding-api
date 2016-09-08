@@ -1,5 +1,9 @@
 **WIP**
 
+webidls status: check top level comment of each file
+- *draft* means some details need work, but the scope is well defined
+- *WIP* means the way the interface plays with the others has not been figured out yet
+
 This project is an attempt to put together a multi-purpose low-level API to
 embed and control Servo.
 
