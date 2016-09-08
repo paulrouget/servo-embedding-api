@@ -40,3 +40,61 @@ not enough to build a full browser application, which requires some other extra
 powers, like access to the operating system. This project doesn't address this
 problematic as it's an orthogonal problem (we usually refer to app level or
 operating system access as "Runtime).
+
+# Overview
+
+**WIP**
+
+The most important interfaces are: Browser, HistoryEntry, Pipeline, LoadData and Viewport.
+
+Basic structure is: A browser that holds a reference to history entries, that hold
+a reference to a pipeline.
+
+A Browser is rendered is a Viewport.
+A Pipeline can be rendered independently in a PreviewViewport
+
+Pipeline can live without a history entry or a browser (orphan pipeline).
+
+## Browser
+
+Servo: top level `Frame`. Aka top level BrowsingContext. The equivalent of a tab.
+
+- list of `HistoryEntry`
+- one entry is "active"
+- other entries are history
+- default properties for future documents
+- can be created empty or with a set of LoadData
+ for session restore
+
+## HistoryEntry
+
+Servo: `FrameState`. Information about a history entry. The related document/pipeline might be alive or not in memory.
+
+- title, url
+- purge/restore pipeline
+- reference to pipeline if pipeline alive
+- can export LoadData for future restore
+
+## Pipeline
+
+Servo: direct `Pipeline` descendant of top level `Frame`. A document.
+
+As many properties, events and actions for a document.
+Can be pending, loading, interactive, complete (loaded).
+Can be preloading.
+
+## LoadData
+
+A dictionnary. Minimal set of info required to store a history entry
+on disk for future session restore. It's also holds the information
+to create a new pipeline.
+
+## Viewport
+
+Where a pipeline is rendered.
+
+3 types of viewport:
+- interactive: its layout define the size of the rendered pipeline. Events
+  are forwarded to the pipeline (scroll, mouse, (keys events will be different))
+- passive: used to preview a pipeline. Its size does affect the pipeline.
+- headless: not graphic output

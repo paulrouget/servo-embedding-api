@@ -46,12 +46,9 @@ interface Browser {
   // pipeline once not pending
   Promise<HistoryEntry> navigate(LoadData loadData, optional Pipeline opener);
 
-  // Will fail if Browser.isPrivateBrowsing != pipeline.isPrivateBrowsing
+  // Will fail if Browser.isPrivateBrowsing != pipeline.isPrivateBrowsing.
+  // Useful with preloading pipelines
   Promise<HistoryEntry> navigateToPipeline(Pipeline pipeline, optional Pipeline opener);
-
-  Promise<PreloadingPipelineID> preloadPipeline(LoadData loadData);
-  Promise<void> cancelPreloadingPipeline(PreloadingPipelineID id);
-  Promise<HistoryEntry> navigateToPreloadingPipeline(PreloadingPipelineID id);
 
   readonly attribute boolean isFocused;
 

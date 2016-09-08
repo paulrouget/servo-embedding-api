@@ -43,13 +43,17 @@ enum SaveRenderingStrategy {
 }
 
 // Using the constructor will create an orphan pipeline
-[Constructor(LoadData loadData, isPrivateBrowsing)]
+// FIXME: describe how different a preloading pipeline is
+[Constructor(LoadData loadData, boolean isPrivateBrowsing, boolean isPreload)]
 interface Pipeline {
 
   readonly attribute boolean isMixedContentAllowed; // Default set via LoadData
   readonly attribute boolean isTrackingContentAllowed; // Default set via LoadData
 
   readonly attribute boolean isOrphan;
+
+  readonly attribute boolean isPreload;
+  Promise<void> cancelPreloadAndRequestDestruction();
 
   // FIXME: related events:
   Promise<void> setMixedContentAllowed(boolean allowed);

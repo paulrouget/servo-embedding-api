@@ -124,6 +124,11 @@ interface ViewportCompositorProxy {
   
 }
 
+interface PreviewViewport {
+  // FIXME: used to paint a pipeline (frozen or not)
+  // FIXME: doesn't forward any event
+}
+
 Viewport implements EventEmitter;
 
 dictionary InputEvent {
