@@ -6,34 +6,33 @@
   * Browser can be seen like a tab.
   */
 
-typedef PreloadingPipelineID = unsigned long;
-
 [Constructor(DOMString contextName, boolean isPrivateBrowsing)]
 interface Browser {
 
   // FIXME: non linear entries. entries editing.
-  // FIXME: not sure focus and visibilty should handled here
-  // FIXME: how is this attached to a viewport?
+  // FIXME: not sure focus and visibilty should be handled here
+  // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attacha and detach
   // FIXME: do we actually want to give access to autopurge and maxLivePipeline?
 
   // Can't be changed after browsing context creation
-  readonly attribute DOMString browsingContextName = "";
+  readonly attribute DOMString browsingContextName;
   readonly attribute boolean isPrivateBrowsing; 
 
-  // This can be used for session restore
-  // On success, historyEntries is filled, active entry's pipeline is pending.
+  // This can be used for session restore.
+  // On success, historyEntries is filled, active entry's pipeline is NOT pending.
   // If necessary, other pipelines can be restored via HistoryEntry::restorePipeline()
-  // Will fail entries already exist
+  // Will fail if entries already exist
   Promise<void> restoreEntries(Sequence<LoadData> data, unsigned long activeIndex);
 
   readonly attribute FrozenList<HistoryEntry> historyEntries;
   readonly attribute unsigned long activeEntryIndex;
+  Promise<void> setActiveEntryIndex(unsigned long);
 
-  // FIXME: Is that a thing we want to give control over?
-  readonly attribute boolean autoPurgePipelines;
-  Promise<void> setAutoPurgePipelines(boolean auto);
-  readonly attribute unsigned long maxLivePipelines;
-  Promise<void> setMaxLivePipelines(unsigned long max);
+  // Purging means killing the pipeline. The entry stays intact
+  readonly attribute boolean doPipelinesAutopurge;
+  // Maximum number of live pipeline before and after the current entry
+  Promise<void> enableAutoPurgePipelines(unsigned long before, unsigned long after);
+  Promise<void> disableAutoPurgePipelines();
 
   // Popup blocker, tracking content blocker, mixed content blocker,
   // and safari-like content blocker. See ContentBlockers.webidl
@@ -93,6 +92,38 @@ interface BrowserFocusChanged : CancelableEvent {
 }
 
 interface BrowserDestroyedEvent : CancelableEvent {
-  const String type = "destroyed";
+  const DOMString type = "destroyed";
   const boolean cancelable = false;
+}
+
+// EXPERIMENTAL AND TEMPORARY
+
+// Below event and interface are not optimized for performance but for ease of
+// implementation.
+// 
+// The goal it to be able to experiment with non-linear history. Entries are
+// stored in an array. When a user goes back in the history and then navigates,
+// the previous forward history is dropped. We want to be able to experiment
+// with saving that previous forward history, moving from an array structure to
+// a tree structure. This goes against the web specifications, and might
+// involve intrusive changes in Servo.
+//
+// The following event and interface are a temporary solution that doesn't
+// require much work on Servo's side, and at the same time make it possible to
+// build a tree structure at the API consumer level. There are some drawbacks.
+// Pipeline's are dropped, only the LoadData is saved, and the consumer has to
+// keep an alternate history structure in sync.
+
+partial interface Browser {
+  Promise<void> restoreForwardEntries(Sequence<LoadData> loadData);
+}
+
+interface BrowserHistoryBranchDeletedEvent : CancelableEvent {
+  // This happens on goBack + navigate, and when restoreForwardEntries is
+  // called. The forward list of entries is dropped. This event comes with a
+  // list of LoadData object that can be used to restore the branch if
+  // necessary.
+  const DOMString type = "history-branch-deleted";
+  const boolean cancelable = false;
+  Sequence<LoadData> droppedEntriesAsLoadData;
 }

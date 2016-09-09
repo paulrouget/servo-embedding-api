@@ -88,7 +88,6 @@ interface Viewport {
   readonly attribute boolean isHeadless; // Set at construction
   readonly attribute boolean isGPUCrashed;
   readonly attribute boolean isOverscrollEnabled; // Set set construction
-  readonly attribute boolean isFocused; // No setter. Implementation specific.
 
   readonly attribute DOMRect frameRect; // See DOMRect.webidl.
 
@@ -152,16 +151,6 @@ interface ViewportBoundsSwitchedEvent : ViewportEvent {
   unsigned long oldBoundIndex;
   unsigned long newBoundIndex;
   BoundsSwitchDirection direction;
-}
-
-interface ViewportVisibilityChangedEvent : ViewportEvent {
-  const DOMString name = "visibility-changed";
-  // viewport.isVisible has been set to the new value
-}
-
-interface ViewportFocusChangedEvent : ViewportEvent {
-  const DOMString name = "focus-changed";
-  // viewport.isFocused has been set to the new value
 }
 
 interface ViewportGPUCrashEvent: ViewportEvent {

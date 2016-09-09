@@ -41,7 +41,7 @@ powers, like access to the operating system. This project doesn't address this
 problematic as it's an orthogonal problem (we usually refer to app level or
 operating system access as "Runtime).
 
-# Overview
+## Overview
 
 **WIP**
 
@@ -55,7 +55,7 @@ A Pipeline can be rendered independently in a PreviewViewport
 
 Pipeline can live without a history entry or a browser (orphan pipeline).
 
-## Browser
+### Browser
 
 Servo: top level `Frame`. Aka top level BrowsingContext. The equivalent of a tab.
 
@@ -66,7 +66,7 @@ Servo: top level `Frame`. Aka top level BrowsingContext. The equivalent of a tab
 - can be created empty or with a set of LoadData
  for session restore
 
-## HistoryEntry
+### HistoryEntry
 
 Servo: `FrameState`. Information about a history entry. The related document/pipeline might be alive or not in memory.
 
@@ -75,7 +75,7 @@ Servo: `FrameState`. Information about a history entry. The related document/pip
 - reference to pipeline if pipeline alive
 - can export LoadData for future restore
 
-## Pipeline
+### Pipeline
 
 Servo: direct `Pipeline` descendant of top level `Frame`. A document.
 
@@ -83,13 +83,13 @@ As many properties, events and actions for a document.
 Can be pending, loading, interactive, complete (loaded).
 Can be preloading.
 
-## LoadData
+### LoadData
 
 A dictionnary. Minimal set of info required to store a history entry
 on disk for future session restore. It's also holds the information
 to create a new pipeline.
 
-## Viewport
+### Viewport
 
 Where a pipeline is rendered.
 
@@ -98,3 +98,17 @@ Where a pipeline is rendered.
   are forwarded to the pipeline (scroll, mouse, (keys events will be different))
 - passive: used to preview a pipeline. Its size does affect the pipeline.
 - headless: not graphic output
+
+
+## Web Extensions implementation
+
+The Web Extension API can be implemented by combining:
+- The Servo embedding API (script injection, WebRequestManager, browserAction, …)
+- Servo API consumer code (for example, tabs management, bookmarks, …)
+- runtime code (for example, native windows, part of the WE runtime API, …)
+
+## WebDriver
+
+- can we implement (part of?) webdriver on top of the embedding api?
+
+

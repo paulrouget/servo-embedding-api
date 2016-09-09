@@ -25,6 +25,7 @@ dictionary FormDataEntry {
 
 dictionary LoadData {
   USVString url;
+  DOMString? title;
   HTTPMethod method;
   Headers headers; // Headers.webidl
   BodyInit? body = null; // See XMLHttpequest.webdil
