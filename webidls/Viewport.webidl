@@ -108,6 +108,15 @@ interface Viewport {
   Promise<boolean /* default prevented */> sendInputEvent(InputEvent); // FIXME: only key events?
 
 
+  // FIXME: I dont' think we should ever care about visibility.
+  // A viewport is rendering a pipeline or not. Maybe the equivalent
+  // of setVisible(false) is to detach the Browser or the Pipeline
+  // If this makes it to the final document, don't forget to add an event.
+  // 
+  // Only used to slow down timers and not call rAF. Think background tabs.
+  // readonly attribute boolean isVisible;
+  // Promise<void> setVisible(boolean visible);
+
 }
 
 interface ViewportCompositorProxy {

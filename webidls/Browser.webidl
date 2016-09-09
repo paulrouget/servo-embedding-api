@@ -51,10 +51,6 @@ interface Browser {
 
   readonly attribute boolean isFocused;
 
-  // Only used to slow down timers and not call rAF. Think background tabs.
-  readonly attribute boolean isVisible;
-  Promise<void> setVisible(boolean visible);
-
   readonly attribute Object prefs;
   Promise<void> setPrefs(Object prefs); // use to set user-agent for example
 }
@@ -79,11 +75,6 @@ interface BrowserWillCloseEvent: CancelableEvent {
   // When window.close() is called
   const DOMString name = "will-destroy";
   const boolean cancelable = true;
-}
-
-interface BrowserVisibilityChanged : CancelableEvent {
-  const DOMString name = "visible-changed";
-  const boolean cancelable = false;
 }
 
 interface BrowserFocusChanged : CancelableEvent {
@@ -122,7 +113,7 @@ partial interface Browser {
 }
 
 interface BrowserForwardHistoryBranchDeletedEvent : CancelableEvent {
-  // This happens on goBack + navigate, and when restoreForwardEntries is
+  // This happens on goBack + navigate, and when replaceEntriesButCurrent is
   // called. The forward list of entries is dropped. This event comes with a
   // list of LoadData object that can be used to restore the branch if
   // necessary.
