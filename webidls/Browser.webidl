@@ -112,18 +112,21 @@ interface BrowserDestroyedEvent : CancelableEvent {
 // require much work on Servo's side, and at the same time make it possible to
 // build a tree structure at the API consumer level. There are some drawbacks.
 // Pipeline's are dropped, only the LoadData is saved, and the consumer has to
-// keep an alternate history structure in sync.
+// maintain an alternate history structure.
 
 partial interface Browser {
-  Promise<void> restoreForwardEntries(Sequence<LoadData> loadData);
+  // Will drop the back and forward entries and replace with new ones.
+  // At that point, all pipelines are killed. Only the current one stays
+  // alive.
+  Promise<void> replaceEntriesButCurrent(Sequence<LoadData> pastLoadData, Sequence<LoadData> futureLoadData);
 }
 
-interface BrowserHistoryBranchDeletedEvent : CancelableEvent {
+interface BrowserForwardHistoryBranchDeletedEvent : CancelableEvent {
   // This happens on goBack + navigate, and when restoreForwardEntries is
   // called. The forward list of entries is dropped. This event comes with a
   // list of LoadData object that can be used to restore the branch if
   // necessary.
-  const DOMString type = "history-branch-deleted";
+  const DOMString type = "forward-history-branch-deleted";
   const boolean cancelable = false;
   Sequence<LoadData> droppedEntriesAsLoadData;
 }
