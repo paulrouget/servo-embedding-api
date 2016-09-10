@@ -1,4 +1,4 @@
-// STATUS: draft
+// STATUS: WIP
 
 /* The creation of a viewport is not defined here. It's implementation specific.
  * This interface defines what's needed from the consumer point of view.
@@ -70,6 +70,19 @@
 
 // FIXME: it would be easier not have the vertical/horizontal split, but it makes
 // it easier to understand how bounds chain when switching is driven by scroll.
+
+
+-> resize
+-> keys
+-> mouse
+-> touch
+
+<- setSize
+<- position
+<- setScale
+<- setCursor
+<- keys
+<- clipboard
 
 dictionary ViewportBounds {
   unsigned long start; // pixels from top/left frame border

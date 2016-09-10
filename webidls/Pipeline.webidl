@@ -66,7 +66,7 @@ interface Pipeline {
   // Used to replace mozbrowserconnected, mozbrowserloadstart, mozbrowserloadend
   // Use performance for time stamps.
   readonly attribute DocumentState? documentState; // Event: document-state-changed. Undefined if isPending or connection error. See Document.webidl
-  readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl // FIXME: should probably be getPerformance()
+  readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl // FIXME: should probably be getPerformance(). Necessary to implement https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
 
   readonly attribute FrozenList<USVString> icons; // Event: icons-changed
   readonly attribute FrozenList<MetaTag> metas; // Event: metas-changed. only <meta name="…" content="…">
@@ -99,6 +99,7 @@ interface Pipeline {
 
   Promise<ContentBlocker> getContentBlocker(ContentBlockerType type);
 
+  Promise<LoadData> buildLoadDataFromCurrentState();
 
   // FIXME: what about WebContents::session?
 
@@ -224,7 +225,7 @@ interface PipelineContextMenuEvent : CancelableEvent {
 };
 
 
-Pipeline implements Searchable;
+Pipeline implements FindInPage;
 Pipeline implements HttpObserverManager;
 Pipeline implements Editable;
 Pipeline implements MultimediaManager;

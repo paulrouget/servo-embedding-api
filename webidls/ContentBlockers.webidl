@@ -1,5 +1,7 @@
 // STATUS: draft
 
+// FIXME: How to add/remove blockers from Browser and/or pipeline?
+
 enum ContentBlockerType {
   "popup", // Popup blocker
   "tracking", // https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection
@@ -7,16 +9,22 @@ enum ContentBlockerType {
   "custom", // adblockers, See https://github.com/servo/servo/issues/9749
 }
 
-interface ContentBlocker {
-  readonly attribute ContentBlockerType type;
-  readonly attribute boolean isEnabled;
-  readonly attribute boolean isTargetedContentBlocked; // Content has been blocked
-  readonly attribute boolean isTargetedContentLoaded; // Content that could have been blocked has been loaded (blocker is or was disabled)
+dictionary ContentBlockerStatus {
+  boolean isEnabled;
+  unsigned long blockedTargetedContentCount; // Content has been blocked
+  unsigned long loadedTargetedContentCount; // Content that could have been blocked has been loaded (blocker is or was disabled)
+}
+
+interface ContentBlocker : WeakRef {
+
   readonly attribute USVString? url; // for custom blockers
+  readonly attribute ContentBlockerType type;
+  readonly attribute ContentBlockerStatus status;
 
   Promise<void> enable();
   Promise<void> disable();
 }
 
-// FIXME: events, including "on destroy" when pipeline dies.
-// FIXME: this is annoying. All these objects will have destroy events… can we do better?
+interface ContentBlockerChangedEvent : Event {
+  const DOMString name = "status-changed"; 
+}

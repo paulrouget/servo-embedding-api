@@ -2,11 +2,14 @@
 
 /**
  *  This is all that is necessary to create a pipeline.
- *  It can be (de)serialized and saved on disk. It can be used for session restore.
+ *  It can be (de)serialized and saved on disk. It can be used for session restore, and to undo
+ *  tab close (Cmd-Shift-T)
  *  The creation of a pipeline (navigation, session restore, restore on navigate) relies on this.
  *  See constellation_msg::LoadData
  *  Relevant: https://github.com/servo/servo/pull/11893
  */
+
+// FIXME: where to (de)serialize LoadData?
 
 enum HTTPMethod { "GET", "POST" }
 

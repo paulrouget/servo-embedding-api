@@ -1,44 +1,39 @@
-// STATUS: WIP
+// STATUS: ok
+
+dictionary EditableStatus {
+  DOMString selectionText;
+  boolean isEditable;
+  boolean canUndo;
+  boolean canRedo;
+  boolean canCut;
+  boolean canCopy;
+  boolean canPaste;
+  boolean canDelete;
+  boolean canSelectAll;
+}
 
 interface Editable {
 
   // This is usually used to build the application Edit menu.
 
-  // FIXME: pipeline implements Editable.
-  // That means there will be a event name collision.
-  // Maybe use as asEditable()
+  // On resolve, editableStatus has been updated
+  Promise<void> undo();
+  Promise<void> redo();
+  Promise<void> cut();
+  Promise<void> copy();
+  Promise<void> paste();
+  Promise<void> pasteAndMatchStyle();
+  Promise<void> delete();
+  Promise<void> selectAll();
+  Promise<void> unselect();
+  Promise<void> replace(DOMString text);
+  Promise<void> replaceMisspelling(DOMString text);
+  Promise<void> insertText(DOMString text);
 
-  readonly attribute DOMString selectionText;
-  readonly attribute boolean isEditable;
-  readonly attribute boolean canUndo;
-  readonly attribute boolean canRedo;
-  readonly attribute boolean canCut;
-  readonly attribute boolean canCopy;
-  readonly attribute boolean canPaste;
-  readonly attribute boolean canDelete;
-  readonly attribute boolean canSelectAll;
-
-  void undo();
-  void redo();
-  void cut();
-  void copy();
-  void paste();
-  void pasteAndMatchStyle();
-  void delete();
-  void selectAll();
-  void unselect();
-  void replace(DOMString text);
-  void replaceMisspelling(DOMString text);
-  void insertText(DOMString text);
+  EditableStatus editableStatus;
 
 }
-
-Editable implements EventEmitter;
 
 interface EditableChangedEvent: Event {
-  const DOMString name = "changed";
-}
-
-interface EditableDestroyEvent: Event {
-  const DOMString name = "changed";
+  const DOMString name = "editable-changed";
 }

@@ -5,39 +5,38 @@
  */
 
 interface HistoryEntry {
-  readonly attribute DOMString? title;
-  readonly attribute USVString? url; // Get updated with redirections
   readonly attribute boolean isPipelineAlive;
-  readonly attribute DOMTimeStamp visitTime; // Necessary to implement https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
+  readonly attribute Pipeline? pipeline; // **Important**: multiple entries can refer to a single pipeline. Will fail if pipeline purged.
 
-  Promise <Pipeline> getPipeline(); // **Important**: multiple entries can refer to a single pipeline. Will fail if pipeline purged.
-  Promise<LoadData> getLoadData(); // Not a copy of the initial load data. Updated after redirects.
   Promise<void> purgePipeline(); // Will only work if frozen
-  Promise<Pipeline> restorePipeline(); // FIXME: Doesn't it make sense? Why and when will we want to do this?
+  Promise<Pipeline> restorePipeline(); // FIXME: Doesn't it make sense? Why and when will we want to do this? Wouldn't that mess up with Browser.webidl's autopurge.
 
-  Promise<Blob> serializeLoadData(); // Used to save to disk
+  // To get up-to-date information about the document (url, title, …), use the pipeline.
+  // If the pipeline is killed, use latestLoadData. It is initialized with the LoadData passed
+  // at construction. It updates the pipeline dies.
+  readonly attribute LoadData latestLoadData;
+
+  // FIXME: No reason for this to live in HistoryEntry
+  Promise<Blob> serializeLoadData(LoadData loadData); // Used to save to disk
 }
 
 HistoryEntry implements EventEmitter;
 
-interface HistoryEntryPipelineWillPurgeEvent: CancelableEvent {
+interface HistoryEntryPipelineWillPurgeEvent : Event {
   // last chance to use pipeline (remove event listeners)
   // This will block. Are we sure?
-  const String type = "pipeline-will-purge";
-  const boolean cancelable = false;
+  const DOMString type = "pipeline-will-purge";
 }
 
-interface HistoryEntryPipelineRestoredEvent : CancelableEvent {
+interface HistoryEntryPipelineRestoredEvent : Event {
   // pipeline is accessible
   // Either restored (if going back far in the history)
   // or swapped (in case of reload)
   // or restored via restorePipeline()
-  const String type = "pipeline-created";
-  const boolean cancelable = false;
+  const DOMString type = "pipeline-created";
 }
 
-interface HistoryEntryDestroyedEvent : CancelableEvent {
-  const String type = "destroyed";
-  const boolean cancelable = false;
-  LoadData loadData; // useful to have if restore is needed for later
+interface HistoryEntryWillDestroyedEvent : Event {
+  // Last chance to access entry.latestLoadData.
+  const DOMString type = "will-destroy";
 }

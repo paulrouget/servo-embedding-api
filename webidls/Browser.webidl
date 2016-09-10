@@ -7,18 +7,17 @@
   */
 
 [Constructor(DOMString contextName, boolean isPrivateBrowsing)]
-interface Browser {
+interface Browser : WeakRef {
 
-  // FIXME: non linear entries. entries editing.
-  // FIXME: not sure focus and visibilty should be handled here
+  // FIXME: not sure focus should be handled here
   // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attacha and detach
-  // FIXME: do we actually want to give access to autopurge and maxLivePipeline?
+  // FIXME: do we want to give access to autopurge and maxLivePipeline?
 
-  // Can't be changed after browsing context creation
+  // Can't change after browser creation
   readonly attribute DOMString browsingContextName;
   readonly attribute boolean isPrivateBrowsing; 
 
-  // This can be used for session restore.
+  // This can be used for session restore, or to undo tab-close.
   // On success, historyEntries is filled, active entry's pipeline is NOT pending.
   // If necessary, other pipelines can be restored via HistoryEntry::restorePipeline()
   // Will fail if entries already exist
@@ -36,6 +35,7 @@ interface Browser {
 
   // Popup blocker, tracking content blocker, mixed content blocker,
   // and safari-like content blocker. See ContentBlockers.webidl
+  // FIXME: not cool. We can't have multiple custom blockers.
   readonly attribute USVString customContentBlockerURL;
   Promise<void> setCustomContentBlockerURL(USVString url);
   readonly attribute Sequence<ContentBlockerType> defaultContentBlockers;
@@ -60,15 +60,20 @@ Browser implements EventEmitter;
 interface BrowserActiveEntryChangedEvent : CancelableEvent {
   // A new document is displayed. Usually after the user
   // clicked on a link and once the new document has been
-  // created (pipeline is not pending anymore).
+  // created (pipeline is not pending anymore). Also happens
+  // when user or page goes back/forward.
   const DOMString type = "active-entry-changed";
   const boolean cancelable = false;
 }
 
 interface BrowserWillNavigateEvent : CancelableEvent {
+  // It's possible to cancel navigation. For example, pin
+  // tabs might want to open links from different domain
+  // into a different tab.
+  // FIXME: shouldn't that be at the pipeline level?
   const DOMString name = "will-navigate";
   const boolean cancelable = true;
-  USVString url;
+  LoadData loadData;
 }
 
 interface BrowserWillCloseEvent: CancelableEvent {
@@ -78,12 +83,7 @@ interface BrowserWillCloseEvent: CancelableEvent {
 }
 
 interface BrowserFocusChanged : CancelableEvent {
-  const DOMString name = "focus-changed";
-  const boolean cancelable = false;
-}
-
-interface BrowserDestroyedEvent : CancelableEvent {
-  const DOMString type = "destroyed";
+  const DOMString name = "focus-did-change";
   const boolean cancelable = false;
 }
 

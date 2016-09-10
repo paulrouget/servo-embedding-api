@@ -1,4 +1,4 @@
-// STATUS: draft
+// STATUS: ok
 
 dictionary ConnectionSecurity {
   // Note: Tracking and content blocking has been removed from this interface.
