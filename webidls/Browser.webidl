@@ -3,19 +3,19 @@
 /**
   * Browser is the equivalent of a top level Constellation::Frame.
   * Browser is a top level browsing context.
-  * Browser can be seen like a tab.
+  * ~= Tab
   */
 
-[Constructor(DOMString contextName, Session session)]
+[Constructor(DOMString contextName, StorageSession storageSession)]
 interface Browser : WeakRef {
 
   // FIXME: not sure focus should be handled here
-  // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attacha and detach
+  // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attach and detach
   // FIXME: do we want to give access to autopurge and maxLivePipeline?
 
   // Can't change after browser creation
   readonly attribute DOMString browsingContextName; // FIXME
-  readonly attribute Session session;
+  readonly attribute StorageSession storageSession;
 
   // This can be used for session restore, or to undo tab-close.
   // On success, historyEntries is filled, active entry's pipeline is NOT pending.
