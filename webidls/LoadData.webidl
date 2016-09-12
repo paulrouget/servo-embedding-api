@@ -26,7 +26,7 @@ dictionary FormDataEntry {
   (File or USVString) value;
 }
 
-dictionary LoadData {
+dictionary LoadData : Serializable /* FIXME: a dictionary can't inherit from an interface */ {
   USVString url;
   DOMString? title;
   HTTPMethod method;

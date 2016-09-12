@@ -37,13 +37,14 @@ dictionary LoadError { // Also used for crash reports
 }
 
 enum SaveRenderingStrategy {
-  "none",
+  "default",
   "displaylist",
   "texture",
 }
 
 // Using the constructor will create an orphan pipeline
 // FIXME: describe how different a preloading pipeline is
+// FIXME: explain orphan
 [Constructor(LoadData loadData, boolean isPrivateBrowsing, boolean isPreload)]
 interface Pipeline {
 
@@ -80,9 +81,9 @@ interface Pipeline {
   readonly attribute unsigned float devicePixelRatio; // Event: device-pixel-ratio-changed
 
 
-  Promise<unsigned float> setDevicePixelRatio(unsigned float ratio);
+  Promise<unsigned float> setDevicePixelRatio(unsigned float ratio); // Will fail for non-top level pipelines
 
-  readonly attribute SaveRenderingStrategy saveRenderingStrategy;
+  readonly attribute SaveRenderingStrategy saveRenderingStrategy; // FIXME: how is that set?
   Promise<void> setSaveRenderingStrategy(SaveRenderingStrategy);
 
   void stop();
@@ -99,7 +100,9 @@ interface Pipeline {
 
   Promise<ContentBlocker> getContentBlocker(ContentBlockerType type);
 
-  Promise<LoadData> buildLoadDataFromCurrentState();
+  Promise<LoadData> buildLoadData();
+
+  Promise<Browser> getBrowser(); // Access to iframes. FIXME: Do we really want that?
 
   // FIXME: what about WebContents::session?
 
@@ -112,7 +115,7 @@ interface Pipeline {
   // FIXME: next: cover WebContents.webidl
 
   // FIXME:
-  readonly attribute Error error; // document-state-changed -> documentState == "error" || "crash". // FIXME: is "crash" necessary?
+  readonly attribute Error error; // document-state-changed -> documentState == "error" || "crash". // FIXME: is "crash" necessary? // FIXME: so generic…
   // pipeline health: crash or not
   // connection health: connection to http server success?
   // http health: status code
@@ -136,8 +139,8 @@ interface Pipeline {
   void executeScript(/*FIXME*/); // code or/and url
   void loadCSS(/* FIXME */);
   // FIXME: Manipulate cookies (web extensions requirement)
+  // FIXME: … and what about any other offline storage?
   // See: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/cookies
-  void getScreenshot();
   void download(USVString url, optional DownloadOptions options);
 
   /*
@@ -180,8 +183,7 @@ interface PipelineNewWindowEvent : CancelableEvent {
   const boolean cancelable = true;
 
   WindowDisposition disposition;
-  boolean setReferrer; // When creating new window, use this pipeline's url as the referrer
-  boolean setOpener; // When creating new window, use this pipeline as the opener
+  LoadData loadData;
   // FIXME: here we should have a LoadData, not referrer & co
   DOMString frameName;
 }
@@ -226,6 +228,6 @@ interface PipelineContextMenuEvent : CancelableEvent {
 
 
 Pipeline implements FindInPage;
-Pipeline implements HttpObserverManager;
+Pipeline implements HTTPObserverManager;
 Pipeline implements Editable;
 Pipeline implements MultimediaManager;

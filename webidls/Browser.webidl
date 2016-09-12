@@ -6,7 +6,7 @@
   * Browser can be seen like a tab.
   */
 
-[Constructor(DOMString contextName, boolean isPrivateBrowsing)]
+[Constructor(DOMString contextName, Session session)]
 interface Browser : WeakRef {
 
   // FIXME: not sure focus should be handled here
@@ -14,8 +14,8 @@ interface Browser : WeakRef {
   // FIXME: do we want to give access to autopurge and maxLivePipeline?
 
   // Can't change after browser creation
-  readonly attribute DOMString browsingContextName;
-  readonly attribute boolean isPrivateBrowsing; 
+  readonly attribute DOMString browsingContextName; // FIXME: can't change, really?
+  readonly attribute Session session;
 
   // This can be used for session restore, or to undo tab-close.
   // On success, historyEntries is filled, active entry's pipeline is NOT pending.
@@ -45,7 +45,7 @@ interface Browser : WeakRef {
   // pipeline once not pending
   Promise<HistoryEntry> navigate(LoadData loadData, optional Pipeline opener);
 
-  // Will fail if Browser.isPrivateBrowsing != pipeline.isPrivateBrowsing.
+  // Will fail if Browser.session != pipeline.session.
   // Useful with preloading pipelines
   Promise<HistoryEntry> navigateToPipeline(Pipeline pipeline, optional Pipeline opener);
 

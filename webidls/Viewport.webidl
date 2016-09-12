@@ -84,6 +84,10 @@
 <- keys
 <- clipboard
 
+// FIXME: key forwarding  strategy, we can't really require all the key events to pass through JS first. That'd be too slow.
+// FIXME: how key forwarding woul dwork with focus?
+// FIXME: if a filter like strategy, we could make it work with mouse events as well
+
 dictionary ViewportBounds {
   unsigned long start; // pixels from top/left frame border
   unsigned long end; // pixels from right/bottom frame border
@@ -96,11 +100,20 @@ enum BoundsSwitchDirection {
   "horizontal",
 }
 
+dictionary OverscrollOptions {
+  boolean enabled;
+  float minPanDistanceRatio;
+  float springFiction;
+  float springStiffness;
+  float stopDistanceThreshold;
+  float stopVelocityThreshold;
+}
+
 interface Viewport {
 
   readonly attribute boolean isHeadless; // Set at construction
+  readonly attribute OverscrollOptions ovetscrollOption; // Set at construction
   readonly attribute boolean isGPUCrashed;
-  readonly attribute boolean isOverscrollEnabled; // Set set construction
 
   readonly attribute DOMRect frameRect; // See DOMRect.webidl.
 
