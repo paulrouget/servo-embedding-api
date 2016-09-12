@@ -34,6 +34,6 @@ interface Editable {
 
 }
 
-interface EditableChangedEvent: Event {
-  const DOMString name = "editable-changed";
+interface EditableDidChangeEvent: Event {
+  const DOMString name = "editable-did-change";
 }

@@ -150,7 +150,7 @@ interface Pipeline {
     requestFullScreen 
     leaveFullScreen
 
-    will-destroy
+    will-destroy // this is where we get the LoadData, or at least save it in HistoryEntry
     focus-changed
 
 

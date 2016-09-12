@@ -11,7 +11,7 @@
 
 // FIXME: where to (de)serialize LoadData?
 
-enum HTTPMethod { "GET", "POST" }
+enum HTTPMethod { "GET", "POST" };
 
 enum TransitionType {
   // https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/history.json
@@ -51,4 +51,7 @@ dictionary LoadData : Serializable /* FIXME: a dictionary can't inherit from an 
   // FIXME: I don't understand why this is necessary, it's
   // present in Servo's LoadData, and also in Gecko's session
   // restore code
+
+  // FIXME: we should make it possible to store any kind of JSON-like
+  // object along LoadData.
 }

@@ -1,4 +1,4 @@
-// STATUS: WIP
+// STATUS: nothing to see here.
 
 // FIXME: can do a lot better than that
 // use case: mute tab, play/pause button in tab

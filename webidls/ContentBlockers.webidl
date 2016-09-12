@@ -25,6 +25,6 @@ interface ContentBlocker : WeakRef {
   Promise<void> disable();
 }
 
-interface ContentBlockerChangedEvent : Event {
-  const DOMString name = "status-changed"; 
+interface ContentBlockerDidChangeEvent : Event {
+  const DOMString name = "status-did-change"; 
 }

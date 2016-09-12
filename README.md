@@ -1,9 +1,5 @@
 **WIP**
 
-webidls status: check top level comment of each file
-- *draft* means some details need work, but the scope is well defined
-- *WIP* means the way the interface plays with the others has not been figured out yet
-
 This project is an attempt to put together a multi-purpose low-level API to
 embed and control Servo.
 
@@ -41,74 +37,107 @@ powers, like access to the operating system. This project doesn't address this
 problematic as it's an orthogonal problem (we usually refer to app level or
 operating system access as "Runtime).
 
-## Overview
-
-**WIP**
+# Overview
 
 The most important interfaces are: Browser, HistoryEntry, Pipeline, LoadData and Viewport.
 
 Basic structure is: A browser that holds a reference to history entries, that hold
-a reference to a pipeline.
-
-A Browser is rendered is a Viewport.
-A Pipeline can be rendered independently in a PreviewViewport
+a reference to a pipeline. A Browser is rendered in a Viewport.
+A Pipeline can be rendered independently.
 
 Pipeline can live without a history entry or a browser (orphan pipeline).
 
-### Browser
+The embedder holds a list of Browser objects.
 
-Servo: top level `Frame`. Aka top level BrowsingContext. The equivalent of a tab.
+## Browser object
 
-- list of `HistoryEntry`
-- one entry is "active"
-- other entries are history
-- default properties for future documents
-- can be created empty or with a set of LoadData
- for session restore
+Servo equivalent: a top level Frame.
 
-### HistoryEntry
+Equivalent of a tab, a top level browsing context. Holds a reference to a
+StorageSession object (see bellow). Holds a list of HistoryEntries (see
+below). Holds a list of ContentBlockers (see below). One history entry is
+active (current pipeline).
 
-Servo: `FrameState`. Information about a history entry. The related document/pipeline might be alive or not in memory.
+Holds default properties for future pipelines.
 
-- title, url
-- purge/restore pipeline
-- reference to pipeline if pipeline alive
-- can export LoadData for future restore
+Is responsible to navigate through the history. Fire events when a new entry
+is available (user clicks on a link).
 
-### Pipeline
+## HistoryEntries
 
-Servo: direct `Pipeline` descendant of top level `Frame`. A document.
+Servo equivalent: FrameState.
 
-As many properties, events and actions for a document.
+Holds an optional reference to a pipeline. Pipeline might be dead. Holds a
+reference to LoadData (see below).
+
+## Pipeline
+
+A page.
+
+A reference to a servo pipeline. Offers access to many internal information
+about the document. Fires many events to keep track of the document status
+(loading state, security state, etc) and request user actions (prompts,
+security questions, …).
+
 Can be pending, loading, interactive, complete (loaded).
-Can be preloading.
 
-### LoadData
+A pipeline implements some extra interfaces: Editable (to build the app "edit"
+menu), FindInPage (to build a in page text search), HTTPObserverManager (to
+track and overwrite HTTP connections), MultimediaManager (to track multimedia
+content, to silence a tab for example), Printable (to implement Print to
+printer or Print to PDF).
 
-A dictionnary. Minimal set of info required to store a history entry
-on disk for future session restore. It's also holds the information
-to create a new pipeline.
+## Preloading
 
-### Viewport
+It's possible to create a new "orphan" pipeline and later attach it to a
+Browser, as long as they share the same session.
+
+## LoadData
+
+Serializable. Minimal set of information to create or restore a pipeline. Is
+used to save a history entry if pipeline is being purged (#11893). Is used to
+restore session (list LoadData can be store on disk). Is used to transmit
+request, to the embedder, to open a new window or a new tab.
+
+## The StorageSession object, and restore session
+
+Holds offline data: appcache, cookies, fileSystem, indexdb, localStorage,
+serviceworkers. Has methods to clear data. Is serializable to write to disk.
+
+No disk IO is done in Servo.
+
+Up to the embedder to save and restore data from disk.
+
+A storage session stores offline data (cookies, localStorage, …). To build a
+session recovery, storage session needs to be serialized and written to disk,
+along with a list of list of list of LoadData (for tab restore). List of list
+of list because a browser is usually made of a list of windows made of a list
+of tabs made of a list of history entries. It's up to the embedder to
+regularly saved the session. The process of writing the storage session and
+the loaddata will require disk access, which is supposed to be handled by the
+embedder.
+
+## ContentBlocker
+
+A Browser has access to multiple content blockers: Popup blocker, tracking
+content blocker, mixed content blocker, custom blocker (à la Safari). A
+pipeline can temporarly enable/disable a content blocker.
+
+## Viewport
 
 Where a pipeline is rendered.
 
+We want to dissociate clipping area and content boundaries. A viewport object
+defines the boundaries geometry.
+
+A viewport is responsible to pass keyboard/mouse/touch events to the
+Browser/pipeline.
+
 3 types of viewport:
 - interactive: its layout define the size of the rendered pipeline. Events
-  are forwarded to the pipeline (scroll, mouse, (keys events will be different))
-- passive: used to preview a pipeline. Its size does affect the pipeline.
+  are forwarded to the pipeline.
+- passive: used to preview a (possibly) frozen pipeline. Its size does NOT
+  affect the pipeline.
 - headless: not graphic output
-
-
-## Web Extensions implementation
-
-The Web Extension API can be implemented by combining:
-- The Servo embedding API (script injection, WebRequestManager, browserAction, …)
-- Servo API consumer code (for example, tabs management, bookmarks, …)
-- runtime code (for example, native windows, part of the WE runtime API, …)
-
-## WebDriver
-
-- can we implement (part of?) webdriver on top of the embedding api?
 
 

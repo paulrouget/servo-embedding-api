@@ -29,8 +29,8 @@ interface FindInPage {
   readonly attribute FindInPageStatus findInPageStatus;
 };
 
-interface FindInPageChangedEvent : Event {
-  const DOMString name = "find-in-page-status-changed";
+interface FindInPageDidChangeEvent : Event {
+  const DOMString name = "find-in-page-status-did-change";
 }
 
 

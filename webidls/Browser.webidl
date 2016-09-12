@@ -14,7 +14,7 @@ interface Browser : WeakRef {
   // FIXME: do we want to give access to autopurge and maxLivePipeline?
 
   // Can't change after browser creation
-  readonly attribute DOMString browsingContextName; // FIXME: can't change, really?
+  readonly attribute DOMString browsingContextName; // FIXME
   readonly attribute Session session;
 
   // This can be used for session restore, or to undo tab-close.
@@ -51,18 +51,19 @@ interface Browser : WeakRef {
 
   readonly attribute boolean isFocused;
 
+  // FIXME: can we do without prefs?
   readonly attribute Object prefs;
   Promise<void> setPrefs(Object prefs); // use to set user-agent for example
 }
 
 Browser implements EventEmitter;
 
-interface BrowserActiveEntryChangedEvent : CancelableEvent {
+interface BrowserActiveEntryDiDChangeEvent : CancelableEvent {
   // A new document is displayed. Usually after the user
   // clicked on a link and once the new document has been
   // created (pipeline is not pending anymore). Also happens
   // when user or page goes back/forward.
-  const DOMString type = "active-entry-changed";
+  const DOMString type = "active-entry-did-change";
   const boolean cancelable = false;
 }
 
@@ -82,7 +83,7 @@ interface BrowserWillCloseEvent: CancelableEvent {
   const boolean cancelable = true;
 }
 
-interface BrowserFocusChanged : CancelableEvent {
+interface BrowserFocusDidChange : CancelableEvent {
   const DOMString name = "focus-did-change";
   const boolean cancelable = false;
 }
@@ -112,12 +113,12 @@ partial interface Browser {
   Promise<void> replaceEntriesButCurrent(Sequence<LoadData> pastLoadData, Sequence<LoadData> futureLoadData);
 }
 
-interface BrowserForwardHistoryBranchDeletedEvent : CancelableEvent {
+interface BrowserForwardHistoryBranchDidDropEvent : CancelableEvent {
   // This happens on goBack + navigate, and when replaceEntriesButCurrent is
   // called. The forward list of entries is dropped. This event comes with a
   // list of LoadData object that can be used to restore the branch if
   // necessary.
-  const DOMString type = "forward-history-branch-deleted";
+  const DOMString type = "forward-history-branch-did-drop";
   const boolean cancelable = false;
   Sequence<LoadData> droppedEntriesAsLoadData;
 }
