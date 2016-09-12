@@ -35,7 +35,7 @@ This low level API covers only **Servo <-> embedder** communication. This is
 not enough to build a full browser application, which requires some other extra
 powers, like access to the operating system. This project doesn't address this
 problematic as it's an orthogonal problem (we usually refer to app level or
-operating system access as "Runtime).
+operating system access as "Runtime").
 
 # Overview
 
@@ -49,7 +49,7 @@ Pipeline can live without a history entry or a browser (orphan pipeline).
 
 The embedder holds a list of Browser objects.
 
-## Browser object
+## [Browser](webidls/Browser.webidl) object
 
 Servo equivalent: a top level Frame.
 
@@ -60,7 +60,7 @@ active (current pipeline).
 
 Holds default properties for future pipelines.
 
-Is responsible to navigate through the history. Fire events when a new entry
+Responsible for the navigation through the history. Fire events when a new entry
 is available (user clicks on a link).
 
 ## HistoryEntries
