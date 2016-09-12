@@ -53,7 +53,7 @@ Servo equivalent: a top level Frame.
 
 Equivalent of a tab, a top level browsing context. Holds a reference to a
 StorageSession object ([see bellow](#storagesession)). Holds a list of HistoryEntries
-([see below](#historyentries)). Holds a list of ContentBlockers ([see below](#contentblockers)).
+([see below](#historyentry)). Holds a list of ContentBlockers ([see below](#contentblockers)).
 One history entry is active (current pipeline).
 
 Holds default properties for future pipelines.
@@ -61,7 +61,7 @@ Holds default properties for future pipelines.
 Responsible for the navigation through the history. Fire events when a new entry
 is available (user clicks on a link).
 
-## [HistoryEntries](webidls/HistoryEntry.webidl)
+## [HistoryEntry](webidls/HistoryEntry.webidl)
 
 Servo equivalent: FrameState.
 
