@@ -54,8 +54,8 @@ The embedder holds a list of Browser objects.
 Servo equivalent: a top level Frame.
 
 Equivalent of a tab, a top level browsing context. Holds a reference to a
-StorageSession object ([see bellow](#StorageSession)). Holds a list of HistoryEntries
-([see below](#HistoryEntries)). Holds a list of ContentBlockers ([see below](#ContentBlockers)).
+StorageSession object ([see bellow](#storagesession)). Holds a list of HistoryEntries
+([see below](#historyentries)). Holds a list of ContentBlockers ([see below](#contentblockers)).
 One history entry is active (current pipeline).
 
 Holds default properties for future pipelines.
@@ -68,7 +68,7 @@ is available (user clicks on a link).
 Servo equivalent: FrameState.
 
 Holds an optional reference to a pipeline. Pipeline might be dead. Holds a
-reference to LoadData ([see below](#LoadData)).
+reference to LoadData ([see below](#loaddata)).
 
 ## [Pipeline](webidls/Pipeline.webidl)
 
