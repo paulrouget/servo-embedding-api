@@ -39,9 +39,7 @@ operating system access as "Runtime").
 
 # Overview
 
-The most important interfaces are: Browser, HistoryEntry, Pipeline, LoadData and Viewport.
-
-Basic structure is: A browser that holds a reference to history entries, that hold
+Basic structure is: A browser holds a reference to history entries, that hold
 a reference to a pipeline. A Browser is rendered in a Viewport.
 A Pipeline can be rendered independently.
 
@@ -99,7 +97,9 @@ used to save a history entry if pipeline is being purged (#11893). Is used to
 restore session (list of LoadData can be store on disk). Is used to transmit
 request, to the embedder, to open a new window or a new tab.
 
-## The [StorageSession](webidls/Session.webidl) object, and restore session
+## [StorageSession](webidls/Session.webidl) 
+
+The StorageSession object, and restore session.
 
 Holds offline data: appcache, cookies, fileSystem, indexdb, localStorage,
 serviceworkers. Has methods to clear data. Is serializable to write to disk.
