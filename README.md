@@ -1,4 +1,5 @@
-**WIP**
+Status: Work in progress. WebIDLs are not normative, and not valid.
+We use WebIDL as an simple way to draft the API.
 
 This project is an attempt to put together a multi-purpose low-level API to
 embed and control Servo.
@@ -22,7 +23,6 @@ has its own section.
 The main goals of this API are:
 - exhaustive and granular. We want it to cover enough that it will suffice for
   most Servo embedders
-- minimal impact on Servo's internals
 - minimal impact on standardised components (unlike the current Browser API
   that re-use the `<iframe>` element)
 - non-blocking (both directions)
