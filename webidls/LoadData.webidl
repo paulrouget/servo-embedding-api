@@ -34,7 +34,7 @@ dictionary LoadData : Serializable /* FIXME: a dictionary can't inherit from an 
   DOMPoint? scrollPosition;
   ScrollRestoration scrollRestorationMode;
   TransitionType? transitionType;
-  Sequence<FormDataEntry>? formData = null;
+  FrozenArray<FormDataEntry>? formData = null;
 
   // The user input that lead to load this entry. For example,
   // if the user typed "foo bar" that eventually redirect to a

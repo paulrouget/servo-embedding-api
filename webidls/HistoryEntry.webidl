@@ -27,7 +27,7 @@ interface HistoryEntry : WeakRef {
 }
 
 interface HistoryEntryHandler {
-  // last chance to use pipeline (remove event listeners)
+  // last chance to use pipeline (remove handlers)
   void onPipelineWillPurge();
 
   // pipeline is accessible

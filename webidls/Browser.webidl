@@ -4,8 +4,9 @@
   * ~= Tab, ~= Webview
   */
 
-[Constructor(DOMString contextName /*FIXME:why?*/, StorageSession storageSession)]
+[Constructor(DOMString contextName, StorageSession storageSession)]
 interface Browser {
+  // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attach and detach
 
   Promise<void> setHandler(BrowserHandler handler);
 
@@ -16,19 +17,17 @@ interface Browser {
 
   void destroy();
 
-  // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attach and detach
-
   // Can't change after browser creation
-  readonly attribute DOMString browsingContextName; // FIXME
+  readonly attribute DOMString browsingContextName;
   readonly attribute StorageSession storageSession;
 
+  // Will fail if entries already exist.
   // This can be used for session restore, or to undo tab-close.
   // On success, historyEntries is filled, active entry's pipeline is NOT pending.
-  // If necessary, other pipelines can be restored via HistoryEntry::restorePipeline()
-  // Will fail if entries already exist
-  Promise<void> restoreEntries(Sequence<LoadData> data, unsigned long activeIndex);
+  // If necessary, other pipelines can be restored via HistoryEntry.restorePipeline()
+  Promise<void> restoreEntries(FrozenArray<LoadData> data, unsigned long activeIndex);
 
-  readonly attribute FrozenList<HistoryEntry> historyEntries;
+  readonly attribute Sequence<HistoryEntry> historyEntries;
   readonly attribute unsigned long activeEntryIndex;
   Promise<void> setActiveEntryIndex(unsigned long);
 
@@ -69,9 +68,9 @@ interface BrowserHandler {
   // clicked on a link and once the new document has been
   // created (pipeline is not pending anymore). Also happens
   // when user or page goes back/forward.
-  void onActiveEntryDidChange();
+  void onActiveEntryChanged();
 
-  void onFocusDidChange();
+  void onFocusChanged();
   
   // window.onClose() is called
   Cancelable onDestroyRequestedFromContent();
@@ -82,7 +81,7 @@ interface BrowserHandler {
 
 // EXPERIMENTAL AND TEMPORARY
 
-// Below event and interface are not optimized for performance but for ease of
+// Below interfaces are not optimized for performance but for ease of
 // implementation.
 // 
 // The goal it to be able to experiment with non-linear history. Entries are
@@ -92,17 +91,17 @@ interface BrowserHandler {
 // a tree structure. This goes against the web specifications, and might
 // involve intrusive changes in Servo.
 //
-// The following event and interface are a temporary solution that doesn't
-// require much work on Servo's side, and at the same time make it possible to
-// build a tree structure at the API consumer level. There are some drawbacks.
-// Pipeline's are dropped, only the LoadData is saved, and the consumer has to
-// maintain an alternate history structure.
+// The following interfaces are a temporary solution that doesn't require much
+// work on Servo's side, and at the same time make it possible to build a tree
+// structure at the API consumer level. There are some drawbacks.  Pipeline's
+// are dropped, only the LoadData is saved, and the consumer has to maintain an
+// alternate history structure.
 
 partial interface Browser {
   // Will drop the back and forward entries and replace with new ones.
   // At that point, all pipelines are killed. Only the current one stays
   // alive.
-  Promise<void> replaceEntriesButCurrent(Sequence<LoadData> pastLoadData, Sequence<LoadData> futureLoadData);
+  Promise<void> replaceEntriesButCurrent(FrozenArray<LoadData> pastLoadData, FrozenArray<LoadData> futureLoadData);
 }
 
 partial interface BrowserHandler {
@@ -110,5 +109,5 @@ partial interface BrowserHandler {
   // called. The forward list of entries is dropped. This event comes with a
   // list of LoadData object that can be used to restore the branch if
   // necessary.
-  void onBrowserForwardHistoryBranchDidDrop(Sequence<LoadData> droppedEntriesAsLoadData);
+  void onBrowserForwardHistoryBranchDroped(FrozenArray<LoadData> droppedEntriesAsLoadData);
 }

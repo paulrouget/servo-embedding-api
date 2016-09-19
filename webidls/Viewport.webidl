@@ -1,5 +1,7 @@
 // FIXME: too complex and not very flexible.
 
+// FIXME: remove event
+
 /* The creation of a viewport is not defined here. It's implementation specific.
  * This interface defines what's needed from the consumer point of view.
  * Servo internals will need more info.
@@ -121,8 +123,8 @@ interface Viewport {
   // can slow down and requestAnimationFrame doesn't need to be called.
 
   // Bounds: 
-  readonly attribute FrozenList<ViewportBounds> horizontalBoundsList;
-  readonly attribute FrozenList<ViewportBounds> verticalBoundsList;
+  readonly attribute FrozenArray<ViewportBounds> horizontalBoundsList;
+  readonly attribute FrozenArray<ViewportBounds> verticalBoundsList;
   readonly attribute unsigned long horizontalBoundsIndex;
   readonly attribute unsigned long verticalBoundsIndex;
 

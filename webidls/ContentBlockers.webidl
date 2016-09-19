@@ -25,7 +25,7 @@ interface ContentBlocker {
 }
 
 interface ContentBlockerHandler {
-  void onStatusDidChange(); // isEnabled changed
-  void onCountDidChange(); // loaded/blockedTargetedContentCount
+  void onStatusChanged(); // isEnabled changed
+  void onCountChanged(); // loaded/blockedTargetedContentCount
   void onDestroy();
 }

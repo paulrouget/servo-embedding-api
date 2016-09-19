@@ -37,7 +37,7 @@ interface StorageSession : Serializable {
 interface StorageSessionHandler {
   // This will probably be throttled by the engine. Might be a good time
   // to save the session.
-  void onDidChange();
+  void onChanged();
   // The session has been restored from disk.
   void onReady();
 }

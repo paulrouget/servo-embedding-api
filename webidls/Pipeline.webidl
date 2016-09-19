@@ -65,8 +65,8 @@ interface Pipeline {
   readonly attribute Performance performance; // See Performance.webidl and PerformanceTiming.webidl // FIXME: should probably be getPerformance(). Necessary to implement https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
   readonly attribute PipelineError pipelineError; // pipeline-state-changed -> pipelineState == "error" || "crash". // FIXME: is "crash" necessary? // FIXME: so generic…
 
-  readonly attribute FrozenList<USVString> icons;
-  readonly attribute FrozenList<MetaTag> metas;
+  readonly attribute FrozenArray<USVString> icons;
+  readonly attribute FrozenArray<MetaTag> metas;
   readonly attribute String? hoveredLink;
   readonly attribute ConnectionSecurity connectionSecurity;
 
@@ -124,7 +124,7 @@ dictionary ContextMenuDetails {
   // FIXME: http://electron.atom.io/docs/api/web-contents/#event-context-menu
 }
 
-dictionary ConsoleMessageEventDetail {
+dictionary ConsoleMessageDetails {
   unsigned short level;
   DOMString message;
   unsigned long line;
@@ -148,7 +148,7 @@ interface PipelineHandler {
   void onDevicePixelRatioChanged();
   Cancelable onFullscreenRequested();
   Cancelable onExitFullscreenRequest();
-  void onConsoleMessage(ConsoleMessageEventDetail message);
+  void onConsoleMessage(ConsoleMessageDetails message);
   // It's possible to cancel navigation. For example, pin
   // tabs might want to open links from different domain
   // into a different tab.

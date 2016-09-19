@@ -9,26 +9,22 @@
 
 // Fired when details regarding a requested resource is available. status
 // indicates socket connection to download the resource.
-dictionary DidGetResponseDetailsEventDetail {
-  // type: ‘did-get-response-details’
-  // not cancelable
-  boolean status;
-  Srting newURL;
-  String originalURL;
-  Number httpResponseCode;
-  String requestMethod;
-  String referrer;
-  Object headers;
-  String resourceType;
-}
+onGotResponseDetailsEventDetail (
+  boolean status,
+  Srting newURL,
+  String originalURL,
+  Number httpResponseCode,
+  String requestMethod,
+  String referrer,
+  Object headers,
+  String resourceType,
+);
 
 // Fired when a redirect was received while requesting a resource.
-dictionary DidGetRedirectRequestEventDetail {
-  // type: ‘did-get-redirect-request’
-  // not cancelable
-  URL oldURL;
-  String newURL;
-  boolean isMainFrame;
-}
+onGotRedirectRequestEventDetail (
+  URL oldURL,
+  String newURL,
+  boolean isMainFrame,
+);
 
 */
