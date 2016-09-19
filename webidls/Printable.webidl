@@ -1,5 +1,3 @@
-// STATUS: ok
-
 enum PrintMarginsType {
   "default",
   "no-margin",
@@ -34,6 +32,6 @@ dictionary PrintOptions {
 }
 
 interface Printable {
-  Promise<void> print(PrintOptions options);
-  Promise<void> printToPDF(PrintOptions options);
+  Promise<void> printPage(PrintOptions options);
+  Promise<void> printPageToPDF(PrintOptions options);
 }

@@ -1,6 +1,4 @@
-// STATUS: WIP
-
-// FIXME: too complex and very flexible.
+// FIXME: too complex and not very flexible.
 
 /* The creation of a viewport is not defined here. It's implementation specific.
  * This interface defines what's needed from the consumer point of view.

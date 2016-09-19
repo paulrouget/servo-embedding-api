@@ -1,18 +1,6 @@
-// STATUS: ok
-
-dictionary EditableStatus {
-  DOMString selectionText;
-  boolean isEditable;
-  boolean canUndo;
-  boolean canRedo;
-  boolean canCut;
-  boolean canCopy;
-  boolean canPaste;
-  boolean canDelete;
-  boolean canSelectAll;
-}
-
 interface Editable {
+
+  Promise<void> setEditableHandler(EditableHandler handler);
 
   // This is usually used to build the application Edit menu.
 
@@ -30,10 +18,17 @@ interface Editable {
   Promise<void> replaceMisspelling(DOMString text);
   Promise<void> insertText(DOMString text);
 
-  EditableStatus editableStatus;
-
+  readonly attribute DOMString selectionText;
+  readonly attribute boolean isEditable;
+  readonly attribute boolean canUndo;
+  readonly attribute boolean canRedo;
+  readonly attribute boolean canCut;
+  readonly attribute boolean canCopy;
+  readonly attribute boolean canPaste;
+  readonly attribute boolean canDelete;
+  readonly attribute boolean canSelectAll;
 }
 
-interface EditableDidChangeEvent: Event {
-  const DOMString name = "editable-did-change";
+interface EditableHandler {
+  void onChange();
 }

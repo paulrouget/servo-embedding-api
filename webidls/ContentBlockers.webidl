@@ -1,7 +1,3 @@
-// STATUS: draft
-
-// FIXME: How to add/remove blockers from Browser and/or pipeline?
-
 enum ContentBlockerType {
   "popup", // Popup blocker
   "tracking", // https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection
@@ -9,22 +5,27 @@ enum ContentBlockerType {
   "custom", // adblockers, See https://github.com/servo/servo/issues/9749
 }
 
-dictionary ContentBlockerStatus {
-  boolean isEnabled;
-  unsigned long blockedTargetedContentCount; // Content has been blocked
-  unsigned long loadedTargetedContentCount; // Content that could have been blocked has been loaded (blocker is or was disabled)
+dictionary ContentBlockerDescription {
+  ContentBlockerType type;
+  USVString url; // for custom blockers, aka Safari content blocker
+  boolean enabledByDefault;
 }
 
-interface ContentBlocker : WeakRef {
+interface ContentBlocker {
+  Promise<void> setHandler(ContentBlockerHandler handler);
 
-  readonly attribute USVString? url; // for custom blockers
-  readonly attribute ContentBlockerType type;
-  readonly attribute ContentBlockerStatus status;
+  readonly attribute ContentBlockerDescription description;
+
+  readonly attribute boolean isEnabled;
+  readonly attribute unsigned long blockedTargetedContentCount; // Content has been blocked
+  readonly attribute unsigned long loadedTargetedContentCount; // Content that could have been blocked has been loaded (blocker is or was disabled)
 
   Promise<void> enable();
   Promise<void> disable();
 }
 
-interface ContentBlockerDidChangeEvent : Event {
-  const DOMString name = "status-did-change"; 
+interface ContentBlockerHandler {
+  void onStatusDidChange(); // isEnabled changed
+  void onCountDidChange(); // loaded/blockedTargetedContentCount
+  void onDestroy();
 }

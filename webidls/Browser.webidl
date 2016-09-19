@@ -1,17 +1,22 @@
-// STATUS: draft
-
 /**
   * Browser is the equivalent of a top level Constellation::Frame.
   * Browser is a top level browsing context.
-  * ~= Tab
+  * ~= Tab, ~= Webview
   */
 
-[Constructor(DOMString contextName, StorageSession storageSession)]
-interface Browser : WeakRef {
+[Constructor(DOMString contextName /*FIXME:why?*/, StorageSession storageSession)]
+interface Browser {
 
-  // FIXME: not sure focus should be handled here
+  Promise<void> setHandler(BrowserHandler handler);
+
+  // Used to expose special JS APIs.
+  // For example, can be used to expose the Browser API or Web Extensions APIs for content
+  // See: https://developer.chrome.com/extensions/content_scripts#execution-environment
+  Promise<void> addJSModuleResolver(/*FIXME*/, boolean onlyForFrameScript);
+
+  void destroy();
+
   // FIXME: how is this attached to a viewport? For swapping, it's important to be able to attach and detach
-  // FIXME: do we want to give access to autopurge and maxLivePipeline?
 
   // Can't change after browser creation
   readonly attribute DOMString browsingContextName; // FIXME
@@ -27,6 +32,17 @@ interface Browser : WeakRef {
   readonly attribute unsigned long activeEntryIndex;
   Promise<void> setActiveEntryIndex(unsigned long);
 
+  // Use to load a new URL. will create a new pipeline and navigate to the
+  // pipeline once not pending
+  Promise<HistoryEntry> navigate(LoadData loadData, optional Pipeline opener);
+
+  // Will fail if Browser.session != pipeline.session.
+  // Useful with prerendering pipelines
+  Promise<Pipeline> createPrerenderingPipeline(LoadData loadData);
+  Promise<HistoryEntry> navigateToPipeline(Pipeline pipeline, optional Pipeline opener);
+
+
+  // FIXME: do we want to give access to autopurge and maxLivePipeline?
   // Purging means killing the pipeline. The entry stays intact
   readonly attribute boolean doPipelinesAutopurge;
   // Maximum number of live pipeline before and after the current entry
@@ -36,19 +52,10 @@ interface Browser : WeakRef {
   // Popup blocker, tracking content blocker, mixed content blocker,
   // and safari-like content blocker. See ContentBlockers.webidl
   // FIXME: not cool. We can't have multiple custom blockers.
-  readonly attribute USVString customContentBlockerURL;
-  Promise<void> setCustomContentBlockerURL(USVString url);
-  readonly attribute Sequence<ContentBlockerType> defaultContentBlockers;
-  Promise<void> setDefaultContentBlockers(Sequence<ContentBlockerType>);
+  readonly attribute Sequence<ContentBlockerDescription> contentBlockers;
+  Promise<void> setContentBlockers(Sequence<ContentBlockerDescription>);
 
-  // Use to load a new URL. will create a new pipeline and navigate to the
-  // pipeline once not pending
-  Promise<HistoryEntry> navigate(LoadData loadData, optional Pipeline opener);
-
-  // Will fail if Browser.session != pipeline.session.
-  // Useful with preloading pipelines
-  Promise<HistoryEntry> navigateToPipeline(Pipeline pipeline, optional Pipeline opener);
-
+  // FIXME: not sure focus should be handled here
   readonly attribute boolean isFocused;
 
   // FIXME: can we do without prefs?
@@ -56,36 +63,21 @@ interface Browser : WeakRef {
   Promise<void> setPrefs(Object prefs); // use to set user-agent for example
 }
 
-Browser implements EventEmitter;
+interface BrowserHandler {
 
-interface BrowserActiveEntryDiDChangeEvent : CancelableEvent {
   // A new document is displayed. Usually after the user
   // clicked on a link and once the new document has been
   // created (pipeline is not pending anymore). Also happens
   // when user or page goes back/forward.
-  const DOMString type = "active-entry-did-change";
-  const boolean cancelable = false;
-}
+  void onActiveEntryDidChange();
 
-interface BrowserWillNavigateEvent : CancelableEvent {
-  // It's possible to cancel navigation. For example, pin
-  // tabs might want to open links from different domain
-  // into a different tab.
-  // FIXME: shouldn't that be at the pipeline level?
-  const DOMString name = "will-navigate";
-  const boolean cancelable = true;
-  LoadData loadData;
-}
+  void onFocusDidChange();
+  
+  // window.onClose() is called
+  Cancelable onDestroyRequestedFromContent();
 
-interface BrowserWillCloseEvent: CancelableEvent {
-  // When window.close() is called
-  const DOMString name = "will-destroy";
-  const boolean cancelable = true;
-}
+  void onDestroy();
 
-interface BrowserFocusDidChange : CancelableEvent {
-  const DOMString name = "focus-did-change";
-  const boolean cancelable = false;
 }
 
 // EXPERIMENTAL AND TEMPORARY
@@ -113,12 +105,10 @@ partial interface Browser {
   Promise<void> replaceEntriesButCurrent(Sequence<LoadData> pastLoadData, Sequence<LoadData> futureLoadData);
 }
 
-interface BrowserForwardHistoryBranchDidDropEvent : CancelableEvent {
+partial interface BrowserHandler {
   // This happens on goBack + navigate, and when replaceEntriesButCurrent is
   // called. The forward list of entries is dropped. This event comes with a
   // list of LoadData object that can be used to restore the branch if
   // necessary.
-  const DOMString type = "forward-history-branch-did-drop";
-  const boolean cancelable = false;
-  Sequence<LoadData> droppedEntriesAsLoadData;
+  void onBrowserForwardHistoryBranchDidDrop(Sequence<LoadData> droppedEntriesAsLoadData);
 }
