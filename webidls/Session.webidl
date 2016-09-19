@@ -20,7 +20,7 @@ enum OfflineStorageType {
 [Constructor(optional DOMString id)]
 interface StorageSession : Serializable {
 
-  Promise<void> setHander(StorageSessionHandler handler);
+  Promise<void> setHandler(StorageSessionHandler handler);
 
   // The constructor takes an optional id. If id is provided, the offline storage
   // will be recovered from disk.
