@@ -166,5 +166,11 @@ interface PipelineHandler {
     DOMString message,
     Callback done /*(returnValue)*/);
 
+  Cancelable onCertificateError(
+    DOMString error,
+    CertificateInfo certificate,
+    Callback accept,
+    Callback reject);
+
   void onDestroy(LoadData loadData);
-}
+};

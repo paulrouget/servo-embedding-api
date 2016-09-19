@@ -4,8 +4,7 @@ We use WebIDL as an simple way to draft the API.
 This project is an attempt to put together a multi-purpose low-level API to
 embed and control Servo.
 
-The initial motivation is to improve Mozilla's [Browser
-API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API),
+The initial motivation is to improve Mozilla's [Browser API](https://developer.mozilla.org/en-US/docs/Web/API/Using_the_Browser_API),
 which is a set of extra methods, property and events on top of the DOM
 `<iframe>` element (mozbrowser). After experimenting with Gecko's and Servo's
 implementation of the Browser API, and Electron's `<webview>`, we started
@@ -58,7 +57,7 @@ One history entry is active (current pipeline).
 
 Holds default properties for future pipelines.
 
-Responsible for the navigation through the history. Fire events when a new entry
+Responsible for the navigation through the history. Notify when a new entry
 is available (user clicks on a link).
 
 ## [HistoryEntry](webidls/HistoryEntry.webidl)
