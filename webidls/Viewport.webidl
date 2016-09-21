@@ -1,4 +1,5 @@
-// FIXME: too complex and not very flexible.
+// FIXME: This is a mess. Read the comment to understand the requirements.
+// But I'm not happy with this approach.
 
 // FIXME: remove event
 
