@@ -60,6 +60,8 @@ interface Browser {
   // FIXME: can we do without prefs?
   readonly attribute Object prefs;
   Promise<void> setPrefs(Object prefs); // use to set user-agent for example
+
+  Promise<boolean/*prevent default canceled*/> dispatchKeyEvent(KeyEvent event);
 }
 
 interface BrowserHandler {
