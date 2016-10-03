@@ -1,13 +1,3 @@
-// FIXME: This is a mess. Read the comment to understand the requirements.
-// But I'm not happy with this approach.
-
-// FIXME: remove event
-
-/* The creation of a viewport is not defined here. It's implementation specific.
- * This interface defines what's needed from the consumer point of view.
- * Servo internals will need more info.
- */
-
 // We want to dissociate clipping area and content boundaries.
 // 
 // A typical scenario is a mobile browser, where a toolbar is half transparent,
@@ -74,19 +64,6 @@
 // FIXME: it would be easier not have the vertical/horizontal split, but it makes
 // it easier to understand how bounds chain when switching is driven by scroll.
 
-
--> resize
--> keys
--> mouse
--> touch
-
-<- setSize
-<- position
-<- setScale
-<- setCursor
-<- keys
-<- clipboard
-
 // FIXME: key forwarding  strategy, we can't really require all the key events to pass through JS first. That'd be too slow.
 // FIXME: how key forwarding woul dwork with focus?
 // FIXME: if a filter like strategy, we could make it work with mouse events as well
@@ -103,20 +80,7 @@ enum BoundsSwitchDirection {
   "horizontal",
 }
 
-dictionary OverscrollOptions {
-  boolean enabled;
-  float minPanDistanceRatio;
-  float springFiction;
-  float springStiffness;
-  float stopDistanceThreshold;
-  float stopVelocityThreshold;
-}
-
 interface Viewport {
-
-  readonly attribute boolean isHeadless; // Set at construction
-  readonly attribute OverscrollOptions ovetscrollOption; // Set at construction
-  readonly attribute boolean isGPUCrashed;
 
   readonly attribute DOMRect frameRect; // See DOMRect.webidl.
 
@@ -157,8 +121,6 @@ interface ViewportCompositorProxy {
   // FIXME:
   // Events on scroll / bounds changes
   // we need to be edit bounds here as well
-  // Support gestures
-  
 }
 
 interface PreviewViewport {

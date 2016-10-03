@@ -138,5 +138,3 @@ Browser/pipeline.
 - passive: used to preview a (possibly) frozen pipeline. Its size does NOT
   affect the pipeline.
 - headless: not graphic output
-
-

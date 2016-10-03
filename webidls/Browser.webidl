@@ -77,6 +77,9 @@ interface BrowserHandler {
   // window.onClose() is called
   Cancelable onDestroyRequestedFromContent();
 
+  // After a compositor event has been consumed.
+  void onCompositorEvent(CompositorEvent, boolean consumed);
+
   void onDestroy();
 
 }
