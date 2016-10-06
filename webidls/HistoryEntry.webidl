@@ -8,10 +8,10 @@ interface HistoryEntry : WeakRef {
   readonly attribute boolean isPipelineAlive;
 
   // **Important**: multiple entries can refer to a single pipeline.
-  // Will fail if pipeline purged.
   readonly attribute Pipeline? pipeline;
 
   // Will only work if frozen
+  // Will fail if pipeline purged.
   Promise<void> purgePipeline();
 
   // FIXME: Doesn't it make sense? Why and when will we want to do this? Wouldn't that mess up with Browser.webidl's autopurge.

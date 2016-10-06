@@ -29,7 +29,6 @@ interface Compositor { // From Servo
   // FIXME: remove those setters…
   Promise<void> setSize(Size);
 
-  Viewport getFocusedViewport();
   Viewport getViewportFromPoint(Point);
 
   void attachViewport(Viewport);

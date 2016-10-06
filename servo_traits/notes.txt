@@ -1,0 +1,10 @@
+API build blindly, from an embedder point of view.
+
+Events:
+- embedder gets a OS event
+- embedder finds the related compositor
+- embedder finds to relevant Browser
+  - for key events, find the viewport with a focused browser
+  - for point events, find the viewport under the point
+- embedder send event to browser
+- browser send back the event after it's been consumed

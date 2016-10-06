@@ -51,6 +51,41 @@ enum SaveRenderingStrategy {
   "texture",
 }
 
+interface TopPipeline : Pipeline {
+  readonly attribute String? hoveredLink;
+  readonly attribute ConnectionSecurity connectionSecurity;
+  readonly attribute boolean isFrozen;
+  readonly attribute boolean isVisible;
+
+  // Prerendering a document. HTTP + layout, no JS. Lot of things to consider. See:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=730101
+  // Will be rendered once Browser.navigateToPipeline() is called.
+  // Created via Browser.createPrerenderingPipeline()
+  readonly attribute boolean isPrerender;
+  Promise<void> cancelPrerenderAndRequestDestruction();
+
+
+  // We want to be able to render frozen pipeline, so we need
+  // a way to save the rendering.
+  // FIXME: do we really want to let the client handle that?
+  readonly attribute SaveRenderingStrategy saveRenderingStrategy;
+  Promise<void> setSaveRenderingStrategy(SaveRenderingStrategy);
+
+  Promise<Blob> capturePage(Rect source, Rect destination); // Works even for frozen pipelines
+
+  Promise<Blob> savePage(SaveType saveType);
+
+  Promise<Blob> downloadURL(USVString url);
+
+  Promise<Sequence<ContentBlocker>> getContentBlockers(ContentBlockerType type);
+
+  Printable asPrintable();
+  Editable asEditable();
+  Findable asFindable();
+  MultimediaManager asMultimediaManager();
+  HTTPObserverManager asHTTPObserverManager();
+}
+
 interface Pipeline {
 
   Promise<void> setPipelineHandler(PipelineHandler handler);
@@ -67,21 +102,6 @@ interface Pipeline {
 
   readonly attribute FrozenArray<USVString> icons;
   readonly attribute FrozenArray<MetaTag> metas;
-  readonly attribute String? hoveredLink;
-  readonly attribute ConnectionSecurity connectionSecurity;
-
-  readonly attribute boolean isFrozen;
-  readonly attribute boolean isVisible;
-  readonly attribute unsigned float devicePixelRatio;
-
-  Promise<unsigned float> setDevicePixelRatio(unsigned float ratio); // Will fail for non-top level pipelines
-
-  // Prerendering a document. HTTP + layout, no JS. Lot of things to consider. See:
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=730101
-  // Will be rendered once Browser.navigateToPipeline() is called.
-  // Created via Browser.createPrerenderingPipeline()
-  readonly attribute boolean isPrerender;
-  Promise<void> cancelPrerenderAndRequestDestruction();
 
   void stopLoading();
 
@@ -89,32 +109,11 @@ interface Pipeline {
   void reload();
   void clearCacheAndReload();
 
-  Promise<LoadData> buildLoadData();
-
-  // We want to be able to render frozen pipeline, so we need
-  // a way to save the rendering.
-  // FIXME: do we really want to let the client handle that?
-  readonly attribute SaveRenderingStrategy saveRenderingStrategy;
-  Promise<void> setSaveRenderingStrategy(SaveRenderingStrategy);
-
   Promise<void> insertCSS(DOMString code);
 
   Promise<Object> evaluateScript(DOMString script, boolean onlyForFrameScript);
   Promise<Object> evaluateScriptFromURL(USVString url, boolean onlyForFrameScript);
 
-  Promise<Blob> capturePage(Rect source, Rect destination); // Works even for frozen pipelines
-
-  Promise<Blob> savePage(SaveType saveType);
-
-  Promise<Blob> downloadURL(USVString url);
-
-  Promise<Sequence<ContentBlocker>> getContentBlockers(ContentBlockerType type);
-
-  Printable asPrintable();
-  Editable asEditable();
-  Findable asFindable();
-  MultimediaManager asMultimediaManager();
-  HTTPObserverManager asHTTPObserverManager();
 }
 
 
