@@ -35,6 +35,8 @@ pub trait Browser {
     // None if no entry has been loaded yet
     fn get_current_entry_index(&self) -> Option<u32>;
 
+    fn get_current_pipeline_proxy(&self) -> Option<TopLevelPipelineProxy>;
+
     // Up to the embedder to eventually release the pipeline from memory.
     // Will fail if pipeline is current
     fn purge_pipeline(&self, pipeline: TopLevelPipelineID) -> Result<(),()>;

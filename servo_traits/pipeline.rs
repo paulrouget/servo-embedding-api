@@ -65,7 +65,31 @@ struct Icon {
     rel: String;
 }
 
-pub trait Pipeline {
+// Any call will be redirected to the current pipeline
+pub trait TopLevelPipelineProxy {
+
+    fn get_pipeline_id(&self) -> TopLevelPipelineID;
+
+    fn get_hovered_link(&self) -> Option<String>;
+    fn get_connection_security(&self) -> ConnectionSecurity;
+
+    // We want to be able to render frozen pipeline, so we need
+    // a way to save the rendering.
+    // FIXME: do we really want to let the client handle that?
+    fn set_save_rendering_strategy(&self, strategy: SaveRenderingStrategy);
+
+    fn capture_page(&self, source: Rect, destination: Rect) -> Future<Blob>;
+    fn save_page(&self, save_type: SaveType) -> Future<Blob>;
+    fn download_url(&self, url: String) -> Future<Blob>;
+
+    // FIXME:
+    // Promise<Sequence<ContentBlocker>> getContentBlockers(ContentBlockerType type);
+    // Printable asPrintable();
+    // Editable asEditable();
+    // Findable asFindable();
+    // MultimediaManager asMultimediaManager();
+    // HTTPObserverManager asHTTPObserverManager();
+
     // Happens during redirects for example.
     //  FIXME: should that be finalURL ? How often would that change?
     fn get_url(&self) -> String;
@@ -95,30 +119,6 @@ pub trait Pipeline {
 
     fn evaluateScript(&self, code: String, only_for_frame_script: bool) -> Future<JSObject>;
 
-
-}
-
-pub trait TopLevelPipeline : Pipeline {
-
-    fn get_hovered_link(&self) -> Option<String>;
-    fn get_connection_security(&self) -> ConnectionSecurity;
-
-    // We want to be able to render frozen pipeline, so we need
-    // a way to save the rendering.
-    // FIXME: do we really want to let the client handle that?
-    fn set_save_rendering_strategy(&self, strategy: SaveRenderingStrategy);
-
-    fn capture_page(&self, source: Rect, destination: Rect) -> Future<Blob>;
-    fn save_page(&self, save_type: SaveType) -> Future<Blob>;
-    fn download_url(&self, url: String) -> Future<Blob>;
-
-    // FIXME:
-    // Promise<Sequence<ContentBlocker>> getContentBlockers(ContentBlockerType type);
-    // Printable asPrintable();
-    // Editable asEditable();
-    // Findable asFindable();
-    // MultimediaManager asMultimediaManager();
-    // HTTPObserverManager asHTTPObserverManager();
 
 }
 
