@@ -21,12 +21,11 @@ pub trait Browser {
     fn register_js_module_resolver(&self, resolver: JSModuleResolver, only_frame_script: bool);
 
     fn get_browsing_context_name(&self) -> String;
-    fn get_session_storage(&self) -> SessionStorage;
 
     // Will fail if entries already exist.
     // This can be used for session restore, or to undo tab-close.
-    // On success, historyEntries is filled, current entry's pipeline is NOT pending.
-    // If necessary, other pipelines can be restored via HistoryEntry.restorePipeline()
+    // On success, entries are accessible, current entry's pipeline is NOT pending.
+    // If necessary, other pipelines can be restored via restore_pipeline()
     fn restore_entries(&self, Vec<LoadData> data, current_index: u32) -> Future<Item=(), Error=()>;
 
     fn get_entries(&self) -> Iterator<HistoryEntry>;
@@ -34,8 +33,6 @@ pub trait Browser {
     fn set_current_entry_index(&self, index: u32) -> Result<(),()>;
     // None if no entry has been loaded yet
     fn get_current_entry_index(&self) -> Option<u32>;
-
-    fn get_current_pipeline_proxy(&self) -> Option<TopLevelPipelineProxy>;
 
     // Up to the embedder to eventually release the pipeline from memory.
     // Will fail if pipeline is current
@@ -55,12 +52,6 @@ pub trait Browser {
     fn navigate_to_prerendering_pipeline(&self, opener: Option<PipelineID>);
     fn cancel_prerendering_pipeline(&self);
     fn has_prerendering_pipeline(&self) -> bool;
-
-    // Will fail if Browser.session != pipeline.session.
-    // Useful with prerendering pipelines or to relocate a pipeline late (like
-    // if the user clicks on link in a pinned tab, that we later want to open
-    // in a new tab because it redirects to a different domain
-    fn navigate_to_pipeline(&self, pipeline: TopLevelPipelineID, opener: Option<PipelineID>);
 
     // Viewport (owner of the browser) doesn't have the notion of focus.
     // It's up to the embedder to make sure only one browser is focused.
@@ -85,10 +76,6 @@ pub trait Browser {
     // Promise<void> setContentBlockers(Sequence<ContentBlockerDescription>);
 }
 
-pub trait TopLevelPipelineProxy {
-    fn get_id(&self) -> TopLevelPipelineID;
-}
-
 pub trait BrowserHandler {
     // A new document is displayed. Usually after the user
     // clicked on a link and once the new document has been
@@ -101,6 +88,9 @@ pub trait BrowserHandler {
     // once the HTTP metadata has been retrieved.
     fn a_pipeline_is_pending(&self, browser: BrowserID);
     fn no_pipeline_is_pending(&self, browser: BrowserID);
+
+    fn pipeline_restored(&self, pipeline: TopLevelPipelineID);
+    fn pipeline_purged(&self, pipeline: TopLevelPipelineID);
 }
 
 // EXPERIMENTAL AND TEMPORARY

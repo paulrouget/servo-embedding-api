@@ -42,7 +42,7 @@ trait View {
     fn set_frame(&self, frame: ViewFrame, Option<Animation>);
 }
 
-pub trait BrowserView : View {
+pub trait Viewport: View {
     fn attach_to_browser(&self, browser: BrowserID);
 
     fn get_content_frame(&self, ) -> ContentFrame;
@@ -52,6 +52,8 @@ pub trait BrowserView : View {
 
     fn set_overscroll_options(&self, options: PageOverscrollOptions);
 
+    // We want to dissociate clipping area and content boundaries. A viewport object
+    // defines the boundaries geometry.
     // Content coordinate are defined by content_frame. The region between the outer
     // frame and the content frame is still painted (layers are clipped by outer
     // frame). A position:fixed;top:0; element would stick to the content frame.
@@ -96,11 +98,11 @@ trait PipelineView : View {
 
 trait Compositor {
     fn invalidate_frame(&self);
-    fn new_browser_view(
+    fn new_viewport(
         &self,
         outer_frame: ViewFrame,
         content_frame: ContentFrame,
-        overscroll_options: PageOverscrollOptions) -> BrowserView;
+        overscroll_options: PageOverscrollOptions) -> Viewport;
     fn new_pipeline_view(&self, frame:  ViewFrame) -> PipelineView;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
 }
