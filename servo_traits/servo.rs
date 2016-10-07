@@ -13,8 +13,8 @@ trait Servo {
 
     // Will recover session from disk if id.is_some(), otherwise, creates new storage.
     // Will resolve once session has been recovered.
-    fn get_session_storage(
-        handler: SessionStorageHandler,
-        id: Option<String>) -> Future<Item = SessionStorage>;
+    fn get_session(
+        handler: SessionHandler,
+        id: Option<SessionID>) -> Future<Item = Session>;
 }
 

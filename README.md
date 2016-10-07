@@ -10,6 +10,10 @@ is all controlled by the embedder.
 
 # Overview
 
+The embedder has multiple `Compositor` which have multiple `Viewport`s.
+A `Session` has multiple `Browser`s which have multiple `Pipeline`s.
+A `Viewport` is linked to a `Browser`.
+
 The embedder provides a `Drawable` object, which gives access to the GL context.
 
 A `Compositor` object is built from `Drawable`.
@@ -32,7 +36,7 @@ A `Browser` is attached to one `Viewport`.
 
 A `Browser` offers access to most the expect methods and properties to manipulate the history and the web page.
 
-A `Browser` is associated to one `SessionStorage`, that controls offline data of for set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
+A `Browser` is associated to one `Session`, that controls offline data of for set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
 
 A `Browser` is associated to several `ContentBlockers`.
 
@@ -43,5 +47,3 @@ A `PipelineProxy` gives access to document properties and methods.
 A `PipelineHandler` reports all the activity of a document (load state, url changes, title changes, …).
 
 `LoadData` is a structure that holds all the information needed to load or restore a page.
-
-

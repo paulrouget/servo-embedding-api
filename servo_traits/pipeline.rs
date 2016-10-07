@@ -142,6 +142,9 @@ pub trait TopLevelPipelineProxy {
     fn capture_page(pipeline: TopLevelPipelineId, source: Rect, destination: Rect) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
     fn save_page(pipeline: TopLevelPipelineId, save_type: SaveType) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
     fn download_url(pipeline: TopLevelPipelineId, url: String) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
+
+
+    fn get_blocked_content_count(pipeline: TopLevelPipelineId) -> Result<BlockedContentCount,PipelineProxyError>;
 }
 
 
@@ -185,4 +188,7 @@ pub trait PipelineHandler {
     // Send back true if servo should ignore the certificate error
     fn ignore_certificate_error(&self, pipeline: PipelineId, error: String, certificate: CertificateInfo, resp_chan: IpcSender<bool>);
 
+    // One or several content blockers have blocked content or discovered
+    // blockable content.
+    fn blocked_content_count_changed(&self, pipeline: PipelineId);
 }
