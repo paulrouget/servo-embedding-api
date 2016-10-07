@@ -29,6 +29,8 @@ pub struct Animation {
 pub struct ViewFrame {
     coordinates: Rect<i32>,
     z_index: i32,
+    background_color: Color,
+    opacity: f32,
 }
 
 pub struct ContentFrame {
@@ -84,14 +86,11 @@ pub trait Viewport: View {
         Option<Animation>) -> Future<Item = ContentFrame>;
 
     fn send_resize_and_scroll_events_to_browser(&self);
+
+    fn set_visible(&self, visible: bool);
+
 }
 
-/// This will preview any pipeline (even frozen ones) and mirror
-/// anything happening in that pipeline. It's possible to render
-/// a pipeline multiple times.
-/// This view doesn't contrains the geometry of the pipeline. The
-/// only thing it does is to rendering with the view's frame.
-/// This is usually used to preview a pipeline from history.
 trait PipelineView : View {
     fn attach_to_pipeline(&self, pipeline: PipelineID);
 }
@@ -103,8 +102,15 @@ trait Compositor {
         outer_frame: ViewFrame,
         content_frame: ContentFrame,
         overscroll_options: PageOverscrollOptions) -> Viewport;
-    fn new_pipeline_view(&self, frame:  ViewFrame) -> PipelineView;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
+
+    /// This will preview any pipeline (even frozen ones) and mirror
+    /// anything happening in that pipeline. It's possible to render
+    /// a pipeline multiple times.
+    /// This view doesn't contrains the geometry of the pipeline. The
+    /// only thing it does is to rendering with the view's frame.
+    /// This is usually used to preview a pipeline from history.
+    fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;
 }
 
 pub trait Drawable {

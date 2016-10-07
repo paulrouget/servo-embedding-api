@@ -2,7 +2,7 @@
 /// Equivalent of a tab. Browser is a top level browsing context.
 
 /// More or less equivalent to FrameState (which is very minimal so far).
-pub trait HistoryEntry {
+pub struct HistoryEntry {
     load_data: LoadData,
     current: bool,
     // Multiple entries can refer to the same pipeline.
@@ -10,9 +10,20 @@ pub trait HistoryEntry {
     pipeline_id: Option<TopLevelPipelineID>,
 }
 
+enum Event {
+    Mouse(/*FIXME*/),
+    Touch(/*FIXME*/),
+    Key(/*FIXME*/),
+    Scroll(/*FIXME*/),
+    TouchpadPressure(/*FIXME*/),
+}
+
 pub trait Browser {
 
     fn get_id(&self) -> BrowserID;
+
+    // Will throttle timers, not tick requestAnimationFrame
+    fn set_visible(&self, visible: bool);
 
     // Used to expose special JS APIs.
     // For example, can be used to expose the Browser API or Web Extensions APIs for content
@@ -61,7 +72,7 @@ pub trait Browser {
     // Return a Future with boolean telling if the event has been
     // consumed by the content (scroll actually happened, key event
     // has been typed, preventDefault() has been called, …)
-    fn handle_event(&self, event: Event) -> Future<Item = bool>;
+    fn handle_event(&self, event: Event) -> impl Future<Item = bool>;
 
     /////// FIXME //////
 

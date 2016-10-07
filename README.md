@@ -4,6 +4,10 @@ WebIDLs are not normative, and not valid. We use WebIDL as an simple way to draf
 
 The Rust traits are closer to final API.
 
+This API tries to delegate as much as possible to the embedder.
+For example, the way events propagate from the native window to the pipeline
+is all controlled by the embedder.
+
 # Overview
 
 The embedder provides a `Drawable` object, which gives access to the GL context.
@@ -16,9 +20,9 @@ A `Compositor` holds a list of `Viewport`s.
 
 A `Viewport` is where a web page is drawn.
 
-A `Viewport` has a coordinate, a size and a z-index.
-
 A `PipelinePreview` is a special type of `Viewport` that can mirror a pipeline from another Browser. Its dimension don't affect the page layout.
+
+All `Viewport`s and `PipelinePreview`s have a coordinate, a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
 
 All `Viewport`s and `PipelinePreview`s are render and clipped by the `Compositor`.
 
@@ -39,3 +43,5 @@ A `PipelineProxy` gives access to document properties and methods.
 A `PipelineHandler` reports all the activity of a document (load state, url changes, title changes, …).
 
 `LoadData` is a structure that holds all the information needed to load or restore a page.
+
+
