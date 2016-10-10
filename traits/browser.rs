@@ -68,6 +68,7 @@ pub trait Browser {
     // consumed by the content (scroll actually happened, key event
     // has been typed, preventDefault() has been called, …)
     fn handle_event(&self, event: Event) -> impl Future<Item = bool>;
+
 }
 
 pub trait BrowserHandler {

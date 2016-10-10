@@ -40,11 +40,13 @@ pub struct ContentFrame {
 
 trait View {
     fn get_frame(&self, ) -> ViewFrame;
-    fn set_frame(&self, frame: ViewFrame, Option<Animation>);
+    fn set_frame(&self, frame: ViewFrame, animation: Option<Animation>);
 }
 
 pub trait Viewport: View {
     fn attach_browser(&self, browser: BrowserID);
+
+    fn is_under_point(&self, point: Point2D<u32>) -> bool;
 
     fn get_content_frame(&self) -> ContentFrame;
 
@@ -85,6 +87,22 @@ pub trait Viewport: View {
         Option<Animation>) -> Future<Item = ContentFrame>;
 
     fn send_resize_and_scroll_events_to_browser(&self);
+
+    // The embedder, at the compositor level, might want to move an element of the page without
+    // a roundtrip to the pipeline. This will provide a reference to the stacking context linked
+    // to an element that can be used via StackingContextProxy' methods.
+    fn get_stacking_context_id_for(&self, pipeline: PipelineID, selector: String) -> impl Future<Item=StackingContextID,Error=()>;
+}
+
+pub struct CompositeAndTransform {
+    composite: CompositeKind,
+    transform: Matrix4D<f32>,
+}
+
+pub trait StackingContextProxy {
+    fn set_composite_and_transform(id: StackingContextID, transform: CompositeAndTransform) -> Result<(),()>;
+    fn get_composite_and_transform(id: StackingContextID) -> Result<CompositeAndTransform,()>;
+    fn exists(id: StackingContextID) -> bool;
 }
 
 trait PipelineView : View {
