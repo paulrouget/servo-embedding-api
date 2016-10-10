@@ -1,13 +1,3 @@
-A Rust API to embed Servo.
-
-WebIDLs are not normative, and not valid. We use WebIDL as an simple way to draft the API.
-
-The Rust traits are closer to final API.
-
-This API tries to delegate as much as possible to the embedder.
-For example, the way events propagate from the native window to the pipeline
-is all controlled by the embedder.
-
 # Overview
 
 The embedder has multiple `Compositor` which have multiple `Viewport`s.
