@@ -9,6 +9,7 @@ trait Servo {
     fn new_browser(
         browser_handler: &BrowserHandler,
         pipeline_handler: &PipelineHandler,
+        http_handler: &HttpHandler,
         browsing_context_name: String) -> Browser;
 
     // Will recover session from disk if id.is_some(), otherwise, creates new storage.

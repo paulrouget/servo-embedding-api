@@ -15,7 +15,9 @@ enum PromptType {
 }
 
 enum PipelineState {
-    // Document not created yet. Period between the time the user clicks on a link and the time the previous document becomes inactive // FIXME: not sure we will ever have access to a pending pipeline
+    // Document not created yet.
+    // Period between the time the user clicks on a link and the time the previous document becomes inactive
+    // FIXME: not sure we will ever have access to a pending pipeline
     Pending,
 
     // Couldn't complete HTTP connection. Servo should not redirect to an error page. This should be handled client side.
@@ -85,10 +87,13 @@ pub struct ConsoleMessageDetails {
 }
 
 
+// It is likely that the embedder only wants to control the current and top level
+// pipeline. So we could expect PipelineProxy's and TopLevelPipelineProxy's methods
+// to be part of Browser. But we don't want to set that in stone. Maybe in the future
+// we want to give access to inner <iframe>' pipeline, or frozen pipelines.
 pub trait PipelineProxy {
 
     // FIXME:
-    // Promise<Sequence<ContentBlocker>> getContentBlockers(ContentBlockerType type);
     // Printable asPrintable();
     // Editable asEditable();
     // Findable asFindable();

@@ -7,7 +7,7 @@
 // Blockers can be enabled/disabled just for a pipeline (allowing mixed content
 // for example is per page), just for a browser (we might want to allow popups
 // just for a tab) or for a whole session (block tracking for the whole session)
-
+//
 // Not all content blockers are enable on page load. Enabling a content blocker
 // for a page doesn't mean it will be activated for the next pipeline.
 
@@ -18,7 +18,8 @@ pub enum ContentBlockerType {
     Custom(String), // adblockers, See https://github.com/servo/servo/issues/9749
 }
 
-// Is content blocker enabled at the session level
+// Is content blocker enabled at the session level.
+// See session.rs
 pub struct SessionContentBlocker {
     type_: ContentBlockerType,
     enabled: bool,

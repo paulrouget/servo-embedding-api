@@ -1,5 +1,4 @@
-// FIXME: define events
-// FIXME: how to translate/scale/rotate/opacity of an "layer" (is it a layer?) of a viewport
+// FIXME: how to translate/scale/rotate/opacity an element / stacking context?
 
 pub struct PageOverscrollOptions {
     top: OverscrollOptions,
@@ -45,20 +44,20 @@ trait View {
 }
 
 pub trait Viewport: View {
-    fn attach_to_browser(&self, browser: BrowserID);
+    fn attach_browser(&self, browser: BrowserID);
 
-    fn get_content_frame(&self, ) -> ContentFrame;
+    fn get_content_frame(&self) -> ContentFrame;
 
     // None if no content
     fn get_content_size(&self, ) -> Option<Size2D<f32>>;
 
     fn set_overscroll_options(&self, options: PageOverscrollOptions);
 
-    // We want to dissociate clipping area and content boundaries. A viewport object
-    // defines the boundaries geometry.
+    // We want to dissociate clipping area and content boundaries.
+    //
     // Content coordinate are defined by content_frame. The region between the outer
     // frame and the content frame is still painted (layers are clipped by outer
-    // frame). A position:fixed;top:0; element would stick to the content frame.
+    // frame). A position:fixed;top:0; element sticks to the content frame.
     // 
     // Use cases:
     // - pinch to zoom. content_frame keeps the same ratio. pixel_ratio changes.
@@ -86,13 +85,15 @@ pub trait Viewport: View {
         Option<Animation>) -> Future<Item = ContentFrame>;
 
     fn send_resize_and_scroll_events_to_browser(&self);
-
-    fn set_visible(&self, visible: bool);
-
 }
 
 trait PipelineView : View {
-    fn attach_to_pipeline(&self, pipeline: PipelineID);
+    // preview any pipeline (even frozen ones) and mirror
+    // anything happening in that pipeline.
+    // This view doesn't contrain the geometry of the pipeline in any way.
+    // It's possible to render a pipeline multiple times.
+    // This is usually used to preview a pipeline from history.
+    fn attach_pipeline(&self, pipeline: PipelineID);
 }
 
 trait Compositor {
@@ -104,12 +105,6 @@ trait Compositor {
         overscroll_options: PageOverscrollOptions) -> Viewport;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
 
-    /// This will preview any pipeline (even frozen ones) and mirror
-    /// anything happening in that pipeline. It's possible to render
-    /// a pipeline multiple times.
-    /// This view doesn't contrains the geometry of the pipeline. The
-    /// only thing it does is to rendering with the view's frame.
-    /// This is usually used to preview a pipeline from history.
     fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;
 }
 
