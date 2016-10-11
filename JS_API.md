@@ -7,7 +7,9 @@ We want the JS API to be as self contained as possible. It doesn't have to live 
 
 We like the Electron approach where a webpage embeds a webpage, with a JS runtime on the side offering access to the OS.
 
-The idea is to make Servo embed itself. Here is a possible approach:
+The idea is to make Servo embed itself.
+
+Here is a possible approach:
 
 ___
 
