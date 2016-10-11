@@ -5,7 +5,11 @@ The current Browser API "pollutes" Servo's code base, bends standards
 
 We want a JS API to be as self contained as possible, and maybe not even live within Servo's code base.
 
-Here is a possible approach:
+We like the Electron approach where a webpage embeds a webpage, with a JS runtime on the side offering access to the OS.
+
+The idea is to make Servo embed itself. Here is a possible approach:
+
+___
 
 [Build a JS runtime](https://github.com/servo/servo/issues/7379).
 Just an event loop + Spidermonkey + bindings
@@ -19,7 +23,7 @@ Behind NewNativeWindow, Rust code:
 - create and attach a Browser to the Viewport, load window.html, with a special module resolver (see below)
 - return the corresponding JS Browser object
 
-At this point, window.html is painted full window in the native window.
+At this point, window.html is rendered full window in the native window.
 
 We want that web page to be able to create other windows within
 that window (like "iframes", but we don't want to re-use an existing element).
@@ -36,7 +40,7 @@ At this point, the JS code could create a new browser (a tab): `var browser2 = n
 This first tab is the second Browser created. Let's create a second tab: `var browser3 = new Browser()`.
 
 *Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
-are inside another browser1 has no implication.*
+are inside another has no implication.*
 
 This is not enough, as these new tabs would be headless. A Viewport object is necessary.
 
@@ -58,8 +62,7 @@ with access to a Compositor object (itself giving access to all the viewport obj
 
 Browser JS code and Compositor JS code can communicate via message passing.
 
-Each port the SharedWorker is a viewport. At this point, there are 2 viewport:
-the Browser created in JS, and the top level Browser initially created in Rust.
+Each port the SharedWorker is a viewport (3 here).
 
 That means all browsers in a window share the same compositor.
 
@@ -79,4 +82,3 @@ that Servo will need to support. How to make it so that it's impossible to
 create a viewport element from regular web content? Maybe the viewport could
 be initialized only if this JS context has access to a valid Browser object
 (only provided if the "Servo" module is accessible)?*
-
