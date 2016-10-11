@@ -3,7 +3,7 @@
 The current Browser API "pollutes" Servo's code base, bends standards
 (`<iframe mozbrowser>`) and security policies (cross-domain XHR).
 
-We want a JS API to be as self contained as possible. It doesn't have to live within Servo's code base.
+We want the JS API to be as self contained as possible. It doesn't have to live within Servo's code base.
 
 We like the Electron approach where a webpage embeds a webpage, with a JS runtime on the side offering access to the OS.
 
@@ -12,7 +12,7 @@ The idea is to make Servo embed itself. Here is a possible approach:
 ___
 
 [Build a JS runtime](https://github.com/servo/servo/issues/7379).
-Just an event loop + Spidermonkey + bindings
+An event loop + Spidermonkey + bindings
 
 On launch: `var browser1 = NewNativeWindow("./window.html")`
 
@@ -26,17 +26,17 @@ Behind NewNativeWindow, Rust code:
 At this point, window.html is rendered full window in the native window.
 
 We want that web page to be able to create other windows within
-that window (like "iframes", but we don't want to re-use an existing element).
+that window (like `<iframes>`, but we don't want to re-use an existing element).
 
-The Browser JS API would be attached to this Browser via Browser::register_js_module_resolver.
-So the JS code executed in this Browser would have access to an ECMAScript module that we
-will call "Servo".
+The Browser JS API would be accessible from this Browser via a module.
+Browser::register_js_module_resolver makes this possible.
+The JS code executed in this Browser would have access to an ECMAScript module that we will call "Servo".
 
 `import {Browser} from "Servo";`
 
 This is how we give special privilege to a Browser.
 
-At this point, the JS code could create a new browser (a tab): `var browser2 = new Browser()`.
+At this point, the JS code (`<script>` within browser1) can create a new browser (a tab): `var browser2 = new Browser()`.
 This first tab is the second Browser created. Let's create a second tab: `var browser3 = new Browser()`.
 
 *Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
@@ -58,7 +58,7 @@ var cw = new CompositorWorker('compositor.js')
 ```
 
 CompositorWorker is a [SharedWorker](https://html.spec.whatwg.org/multipage/workers.html#sharedworker)
-with access to a Compositor object (itself giving access to all the viewport object).
+with access to a Compositor object (giving access to all the viewport object).
 
 Browser JS code and Compositor JS code can communicate via message passing.
 
