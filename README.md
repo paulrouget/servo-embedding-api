@@ -28,7 +28,7 @@ A [`PipelinePreview`](servo_traits/compositor/compositor.rs) is a special type o
 
 All [`Viewport`](servo_traits/compositor/viewport.rs) and [`PipelinePreview`](servo_traits/compositor/compositor.rs) have a coordinate, a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
 
-All [`Viewport`](servo_traits/compositor/viewport.rs) and [`PipelinePreview`](servo_traits/compositor/compositor.rs) are render and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
+All [`Viewport`](servo_traits/compositor/viewport.rs) and [`PipelinePreview`](servo_traits/compositor/compositor.rs) are rendered and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) (Servo's Frame) is the equivalent of a tab.
 
