@@ -3,7 +3,7 @@
 The current Browser API "pollutes" Servo's code base, bends standards
 (`<iframe mozbrowser>`) and security policies (cross-domain XHR).
 
-We want a JS API to be as self contained as possible, and maybe not even live within Servo's code base.
+We want a JS API to be as self contained as possible. It doesn't have to live within Servo's code base.
 
 We like the Electron approach where a webpage embeds a webpage, with a JS runtime on the side offering access to the OS.
 
