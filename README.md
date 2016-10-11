@@ -4,7 +4,7 @@ least, to build a Servo-based browser.
 
 This API is in Rust. We don't want to expose a JS API directly from Servo.
 
-To understand how that fit in the BrowserHTML story, see the JS_API.md document.
+To understand how that fit in the BrowserHTML story, see the [JS_API.md](JS_API.md) document.
 
 The API is split in two: [`/compositor/`](servo_traits/compositor)
 and [`/browser/`](servo_traits/browser).
