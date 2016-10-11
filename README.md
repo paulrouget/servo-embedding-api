@@ -1,5 +1,4 @@
 This is a non-normative and non-functional Rust API proposal for Servo.
-
 It's built from the perspective of an embedder. This is what we would need, at
 least, to build a Servo-based browser.
 
@@ -9,8 +8,10 @@ To understand how that fit in the BrowserHTML story, see the JS_API.md document.
 
 # overview
 
-The embedder has multiple `Compositor` which have multiple `Viewport`.
+Multiple `Compositor` have multiple `Viewport`.
+
 A `Session` has multiple `Browser` which have multiple `Pipeline`.
+
 A `Viewport` is linked to a `Browser`.
 
 The embedder provides a `Drawable` object, which gives access to the GL context.
