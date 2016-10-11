@@ -12,12 +12,6 @@ One code lives in the Compositor thread, the other in the Constellation thread.
 
 # overview
 
-Multiple [`Compositor`](servo_traits/compositor/compositor.rs)
-have multiple [`Viewport`](servo_traits/compositor/viewport.rs).
-
-A [`Session`](servo_traits/browser/session.rs)
-has multiple [`Browser`](servo_traits/browser/browser.rs) which have multiple [`Pipeline`](servo_traits/browser/pipeline.rs).
-
 A [`Viewport`](servo_traits/compositor/viewport.rs) is linked to a [`Browser`](servo_traits/browser/browser.rs).
 
 The embedder provides a [`Drawable`](servo_traits/compositor/compositor.rs) object, which gives access to the GL context.
@@ -41,6 +35,8 @@ A [`Browser`](servo_traits/browser/browser.rs) (Servo's Frame) is the equivalent
 A [`Browser`](servo_traits/browser/browser.rs) is attached to one [`Viewport`](servo_traits/compositor/compositor.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) offers access to methods and properties to manipulate the history and the web page.
+
+A [`Session`](servo_traits/browser/session.rs) has multiple [`Browser`](servo_traits/browser/browser.rs) which have multiple [`Pipeline`](servo_traits/browser/pipeline.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) is associated to one [`Session`](servo_traits/browser/session.rs), that controls offline data of a set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
 
