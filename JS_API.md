@@ -35,8 +35,8 @@ This is how we give special privilege to a Browser.
 At this point, the JS code could create a new browser (a tab): `var browser2 = new Browser()`.
 This first tab is the second Browser created. Let's create a second tab: `var browser3 = new Browser()`.
 
-**Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
-are inside another browser1 has no implication.**
+*Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
+are inside another browser1 has no implication.*
 
 This is not enough, as these new tabs would be headless. A Viewport object is necessary.
 
@@ -74,9 +74,9 @@ compositor.
 
 ___
 
-**Note: The `<viewport>` tag will, hopefully, be the only non-standard element
+*Note: The `<viewport>` tag will, hopefully, be the only non-standard element
 that Servo will need to support. How to make it so that it's impossible to
 create a viewport element from regular web content? Maybe the viewport could
 be initialized only if this JS context has access to a valid Browser object
-(only provided if the "Servo" module is accessible)?**
+(only provided if the "Servo" module is accessible)?*
 
