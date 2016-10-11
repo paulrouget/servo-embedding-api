@@ -41,6 +41,9 @@ pub trait Viewport: View {
     // The embedder, at the compositor level, might want to move an element of the page without
     // a roundtrip to the pipeline. This will provide a reference to the stacking context linked
     // to an element that can be used via StackingContextProxy' methods.
+    // This is useful for example in the scenario describe in the above comment, where a toolbar
+    // can be moved at the same time as a content frame. Both in 2 different viewports.
+    // It is important for these 2 operations to be totally in sync.
     fn get_stacking_context_id_for(&self, pipeline: PipelineID, selector: String) -> impl Future<Item=StackingContextID,Error=()>;
 }
 
@@ -50,7 +53,7 @@ pub struct CompositeAndTransform {
 }
 
 pub trait StackingContextProxy {
-    fn set_composite_and_transform(id: StackingContextID, transform: CompositeAndTransform) -> Result<(),()>;
+    fn set_composite_and_transform(id: StackingContextID, transform: CompositeAndTransform, Option<Animation>) -> Result<(),()>;
     fn get_composite_and_transform(id: StackingContextID) -> Result<CompositeAndTransform,()>;
     // FIXME: how to get notified it's been destroyed
     fn exists(id: StackingContextID) -> bool;

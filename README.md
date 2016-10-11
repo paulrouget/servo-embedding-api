@@ -6,6 +6,9 @@ This API is in Rust. We don't want to expose a JS API directly from Servo.
 
 To understand how that fit in the BrowserHTML story, see the JS_API.md document.
 
+The API is split in two: `/compositor/` and `/browser/`. One code lives in the
+Compositor thread, the other in the Constellation thread.
+
 # overview
 
 Multiple `Compositor` have multiple `Viewport`.
@@ -34,11 +37,9 @@ A `Browser` (Servo's Frame) is the equivalent of a tab.
 
 A `Browser` is attached to one `Viewport`.
 
-A `Browser` offers access to most the expect methods and properties to manipulate the history and the web page.
+A `Browser` offers access to methods and properties to manipulate the history and the web page.
 
-A `Browser` is associated to one `Session`, that controls offline data of for set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
-
-A `Browser` is associated to several `ContentBlockers`.
+A `Browser` is associated to one `Session`, that controls offline data of a set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
 
 A `BrowserHandler` reports all the activity of a browser (history changes, navigation, …).
 
@@ -47,12 +48,6 @@ A `PipelineProxy` gives access to document properties and methods.
 A `PipelineHandler` reports all the activity of a document (load state, url changes, title changes, …).
 
 `LoadData` is a structure that holds all the information needed to load or restore a page.
-
-# threads
-
-Compositor and Viewport code lives in Servo's Compositor thread.
-
-Browser code lives in Servo's constellation thread.
 
 # life of an event
 
