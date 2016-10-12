@@ -68,6 +68,11 @@ impl MyCompositor {
                 self.compositor.new_viewport(frame, content_frame, overscroll_options)
                                .attach_browser(browser)
                                .set_visible(visible);
+            },
+            CompositorMsg::ShowConfirmDialog(browser, title, message, resp_chan) => {
+                // build a popup, draw it somewhere, wait for keyboard or
+                // mouse events to see if the user clicks cancel or ok.
+                // then send boolean to resp_chan
             }
         }
     }

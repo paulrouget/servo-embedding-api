@@ -68,13 +68,19 @@ impl MyWindow { // One per native window
                     }
                 }
 
-                if event.key == CMD_L { Cmd-L, focus url bar
+                if event.key == CMD_L { // Cmd-L, focus url bar
                     let browser = self.browsers[self.fg_browser_index];
                     browser.handle_event(event).and_then(|consumed| {
                         if !consumed {
                             // […] focus urlbar
                         }
                     });
+                }
+
+                if event.key == CMD_Q { // Cmd-Q, quit
+                    let msg = AppMsg::Quit();
+                    // not sure how to reach the session
+                    session.app_sender(msg);
                 }
 
             }
@@ -172,9 +178,32 @@ impl PipelineHandler for MySession {
                 // Will cancel navigation
                 false
             },
+            JavaScript => {
+                let browser = self.find_browser_for_pipeline(pipeline);
+                let window = self.find_window_for_browser(browser);
+                window.create_new_browser(load_data, WindowDisposition::BackgroundTab);
+                false
+            }
+            Reload => {
+                // Reload is about to happen
+            },
             _ => {
                 // Will let navigation happen
-                true
+                let browser = self.find_browser_for_pipeline(pipeline);
+                if is_pin_tab(browser) { // the pin tab notion is an embedder thing
+                    let old_domain = Url::parse(PipelineProxy::get_url(pipeline)).unwrap();
+                    let new_domain = Url::parse(load_data.url).unwrap();
+                    if old_domain != new_domain {
+                        let window = self.find_window_for_browser(browser);
+                        window.create_new_browser(load_data, WindowDisposition::ForegroundTab);
+                        // Will cancel navigation
+                        false
+                    } else {
+                        true
+                    }
+                } else {
+                    true
+                }
             }
         }
     }
@@ -216,6 +245,17 @@ impl PipelineHandler for MySession {
             self.find_window_for_browser(browser)
         }
         window.create_new_browser(load_data, disposition);
+    }
+
+    fn confirm(&self, pipeline: PipelineID, title: String, message: String, resp_chan: IpcSender<bool>) {
+        let browser = self.find_browser_for_pipeline(pipeline);
+        let window = self.find_window_for_browser(browser);
+        let msg = CompositorMsg::ShowConfirmDialog(
+            browser.get_id(),
+            title,
+            message,
+            resp_chan);
+        window.compositor_sender.send(msg);
     }
 }
 
