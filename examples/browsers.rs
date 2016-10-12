@@ -110,9 +110,6 @@ impl MyWindow { // One per native window
                           load_data: LoadData,
                           opener: Option<PipelineID>
                           disposition: WindowDisposition) {
-        // FIXME
-        // Create a new browser
-        // 
         let browser = Browser:new(&self.session,
                                   "".to_owned(),
                                   // FIXME: not sure if that's valid rust,
