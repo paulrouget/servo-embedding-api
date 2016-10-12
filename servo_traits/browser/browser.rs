@@ -39,14 +39,17 @@ pub trait Browser {
     // On success, entries are accessible, current entry's pipeline is not pending.
     // If necessary, other pipelines can be restored via restore_pipeline()
     fn restore_entries(&self, Vec<LoadData> data, current_index: u32) -> impl Future<Item=(), Error=()>;
-    fn get_entries(&self) -> Iterator<HistoryEntry>;
+
+    fn get_entries(&self) -> Vec<HistoryEntry>;
     fn get_entry_count(&self) -> u32;
     // None if no entry has been loaded yet
+    fn get_current_entry(&self) -> Option<HistoryEntry>;
     fn get_current_entry_index(&self) -> Option<u32>;
     // Will fail if index is not reachable. Will cancel any pending pipeline.
     // On success, the current pipeline is restored and not pending,
     // and current entry index has been updated.
     fn set_current_entry_index(&self, index: u32) -> impl Future<Item=(), Error=()>;
+
     fn has_pending_pipeline(&self) -> bool;
     fn cancel_pending_pipeline(&self);
     // Up to the embedder to eventually release the pipeline from memory.
@@ -80,7 +83,7 @@ pub trait BrowserHandler {
     // clicked on a link and once the new document has been
     // created (pipeline is not pending anymore). Also happens
     // when user or page goes back/forward.
-    fn current_entry_index_changed(&self, browser: BrowserID, index: u32);
+    fn current_entry_index_changed(&self, browser: BrowserID, pipeline: PipelineID, index: u32);
 
     // When an entry change. For example after a reload or replaceState.
     fn history_entry_changed(&self, browser: BrowserID, index: u32);

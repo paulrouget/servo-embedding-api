@@ -140,15 +140,18 @@ pub trait TopLevelPipelineProxy {
     fn save_page(pipeline: TopLevelPipelineId, save_type: SaveType) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
     fn download_url(pipeline: TopLevelPipelineId, url: String) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
 
-
     fn get_blocked_content_count(pipeline: TopLevelPipelineId) -> Result<BlockedContentCount,PipelineProxyError>;
 }
 
 
 pub trait PipelineHandler {
 
-    fn created(&self, pipeline: PipelineId);
+    // Warning: might not be current!
+    fn created(&self, pipeline: PipelineId); // Only after pending
     fn destroyed(&self, pipeline: PipelineId);
+
+    fn frozen(&self, pipeline: PipelineId);
+    fn thawn(&self, pipeline: PipelineId);
 
     fn url_changed(&self, pipeline: PipelineId);
     fn title_changed(&self, pipeline: PipelineId);

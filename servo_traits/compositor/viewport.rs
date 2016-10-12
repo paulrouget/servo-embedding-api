@@ -2,6 +2,11 @@ pub trait Viewport: View {
     fn attach_browser(&self, browser: BrowserID);
     fn get_attached_browser(&self) -> Option<BrowserID>;
 
+    // Not displayed if not visible.
+    // Skipped by get_viewports_from_point if not visible
+    fn set_visibility(&self, visible: bool);
+    fn get_visibility(&self) -> bool;
+
     fn get_content_frame(&self) -> ContentFrame;
 
     // None if no content
