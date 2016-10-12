@@ -42,9 +42,10 @@ pub trait View {
     fn is_under_point(&self, point: Point2D<u32>) -> bool;
 }
 
-trait Compositor {
+pub trait Compositor {
     // One per native window
     fn new(drawable: &Drawable) -> Compositor;
+    fn get_id(&self) -> CompositorID;
     fn invalidate_frame(&self);
     fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame, overscroll_options: PageOverscrollOptions) -> Viewport;
     fn get_viewports(&self) -> Iterator<Viewport>;
@@ -52,7 +53,7 @@ trait Compositor {
     fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;
 }
 
-trait PipelineView : View {
+pub trait PipelineView : View {
     // preview any pipeline (even frozen ones) and mirror
     // anything happening in that pipeline.
     // This view doesn't contrain the geometry of the pipeline in any way.

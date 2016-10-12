@@ -1,5 +1,6 @@
 pub trait Viewport: View {
     fn attach_browser(&self, browser: BrowserID);
+    fn get_attached_browser(&self) -> Option<BrowserID>;
 
     fn get_content_frame(&self) -> ContentFrame;
 

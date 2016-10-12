@@ -12,7 +12,13 @@ pub enum HTTPMethod { GET, POST }
 pub enum TransitionType {
     // How this document has been reached
     // See: https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/history.json
-    Link, Typed, Bookmark, FormSubmit, Reload, Keyword,
+    LinkClicked(MouseButton, KeyModifier),
+    JavaScript,
+    Typed,
+    Bookmark,
+    FormSubmit,
+    Reload,
+    Keyword,
 }
 
 pub struct FormDataEntry {
@@ -22,25 +28,27 @@ pub struct FormDataEntry {
 
 #[derive(Deserialize, Serialize)]
 pub struct LoadData {
-  url: String;
-  title: String;
-  http_method: HTTPMethod;
-  http_headers: HTTPHeaders; // See Headers.webidl
-  body: BodyInit; // See XMLHttpequest.webdil
-  referrer_url: String;
-  scroll_position: Point2D<f32>,
-  scroll_restoration_mode: ScrollRestoration, // See History.webid
+  url: String,
+  title: Option<String>,
+  http_method: HTTPMethod,
+  http_headers: Option<HTTPHeaders>, // See Headers.webidl
+  body: Option<BodyInit>, // See XMLHttpequest.webdil
+  referrer_url: Option<String>,
+  scroll_position: Option<Point2D<f32>>,
+  scroll_restoration_mode: ScrollRestoration, // See History.webid. Auto by default
   transition_type: TransitionType,
-  js_state_object: JSObject, // window.history.pushState & co
-  form_data: Vec<FormDataEntry>,
+  js_state_object: Option<JSObject>, // window.history.pushState & co
+  form_data: Option<Vec<FormDataEntry>>,
   // The user input that lead to load this entry. For example,
   // if the user typed "foo bar" that eventually redirect to a
   // google URL, user typed value is "foo bar"
-  user_typed_value: String,
+  user_typed_value: Option<String>,
 
   // FIXME: I don't understand why the referrer policy should be
   // part of the LoadData, it's present in Servo's LoadData, and
-  // also in Gecko's session restore code
+  // also in Gecko's session restore code.
+  // The LoadData is supposed to be filled according to the referrer
+  // policy, so there's no need for it.
   referrer_policy: ReferrerPolicy, // See Request.webidl
 
   // FIXME: how do we save the state of the content blockers?

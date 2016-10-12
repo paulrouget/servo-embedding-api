@@ -48,6 +48,7 @@ pub trait Browser {
     // and current entry index has been updated.
     fn set_current_entry_index(&self, index: u32) -> impl Future<Item=(), Error=()>;
     fn has_pending_pipeline(&self) -> bool;
+    fn cancel_pending_pipeline(&self);
     // Up to the embedder to eventually release the pipeline from memory.
     // Will fail if pipeline is current
     fn purge_pipeline(&self, pipeline: TopLevelPipelineID) -> Result<(),()>;

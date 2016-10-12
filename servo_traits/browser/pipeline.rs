@@ -165,6 +165,9 @@ pub trait PipelineHandler {
     // Up to the embedder to destroy or not the Browser
     fn close(&self, pipeline: PipelineId);
 
+    // Warning: Cmd/Ctrl/Click should not trigger new_window. It's up to
+    // the embedder to decide what to do when a link is clicked with a keyboard
+    // modifier. See will_navigate and LoadData::TransitionType::LinkClicked.
     fn new_window(&self, pipeline: PipelineId, disposition: WindowDisposition, load_data: LoadData, frame_name: String);
     fn context_menu(&self, pipeline: PipelineId, option: ContextMenuDetails);
     fn fullscreen(&self, pipeline: PipelineId);
