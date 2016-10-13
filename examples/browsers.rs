@@ -1,3 +1,9 @@
+struct ProgressbarStatus {
+    Connecting,
+    Connected,
+    Loaded,
+}
+
 struct MySession {
     session: Session,
     windows: Vec<MyWindow>,
@@ -236,6 +242,30 @@ impl MyWindow { // One per native window
         let msg = CompositorMsg::PreviewManyPipelines(pipelines);
         self.compositor_sender.send(msg);
     }
+
+    fn update_progressbar(&self) {
+        let mut status = ProgressbarStatus::Loaded;
+        let browser = self.browsers[self.fg_browser_index];
+        if browser.has_pending_pipeline() {
+            status = ProgressbarStatus::Connecting;
+            // update progressbar
+            return;
+        }
+
+        let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
+        let state = PipelineProxy::get_pipeline_state(pipeline).expect("error");
+
+        status = match state {
+            Complete | Error(_) | Crash(_) => {
+                ProgressbarStatus::Loaded
+            },
+            Interactive, Loading => {
+                ProgressbarStatus::Connected
+            },
+
+        }
+        // update progressbar
+    }
 }
 
 impl MySession {
@@ -359,6 +389,10 @@ impl PipelineHandler for MySession {
     }
 
     fn state_changed(&self, pipeline: PipelineID) {
+        let browser = self.find_browser_for_pipeline(pipeline);
+        let window = self.find_window_for_browser(browser);
+        window.update_progressbar();
+
         let state = PipelineProxy::get_pipeline_state(pipeline).expect("error");
         match state {
             PipelineState::Error(_) => {
@@ -378,7 +412,19 @@ impl PipelineHandler for MySession {
 }
 
 impl BrowserHandler for MySession {
+
     fn current_entry_index_changed(&self, browser, pipeline, index) {
         // Update a map of browser <-> pipeline
     }
+
+    fn pipeline_pending(&self, browser: BrowserID) {
+        let window = self.find_window_for_browser(browser);
+        window.update_progressbar();
+    }
+
+    fn pipeline_pending(&self, browser: BrowserID) {
+        let window = self.find_window_for_browser(browser);
+        window.update_progressbar();
+    }
+
 }
