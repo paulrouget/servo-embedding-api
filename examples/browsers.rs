@@ -52,7 +52,20 @@ impl MyWindow { // One per native window
 
             BrowserMsg::MouseEvent(event, browserid) => {
                 let browser = GetBrowserFromID(browseid);
-                browserid.handle_event(event);
+                browserid.handle_event(event).and_then(|consumed| {
+                    if event_is_scroll_event && !consumed {
+
+                        // strategy 1: all scroll events that are not consumed
+                        // are sent back to compositor
+                        let msg = CompositorMsg::UnconsumedScrollEvent(event, browserid);
+
+                        // strategy 2: all scroll events stay in compositor until
+                        // the use remove his fingers from touchpad
+                        let msg = CompositorMsg::ScrollViewportUntilRelease(browserid);
+
+                        self.compositor_sender.send(msg);
+                    }
+                });
             }
 
             BrowserMsg::KeyboardEvent(event) => {
@@ -214,6 +227,14 @@ impl MyWindow { // One per native window
             self.fg_browser_index = self.browsers.size - 1;
             // […] more stuff
         }
+    }
+
+    fn preview_browser_history(&self, browser) {
+        let pipelines = browser.get_entries().iter().filter_map(|e| {
+            e.pipeline_id
+        });
+        let msg = CompositorMsg::PreviewManyPipelines(pipelines);
+        self.compositor_sender.send(msg);
     }
 }
 
