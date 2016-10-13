@@ -48,6 +48,7 @@ enum SaveType {
 pub struct PipelineError {
     final_url: String,
     // Chrome error list: https://cs.chromium.org/chromium/src/net/base/net_error_list.h
+    // FIXME: maybe an enum should be better
     code: u32,
     // Human readable
     description: String,
@@ -71,6 +72,7 @@ pub enum PipelineProxyError {
     NoSuchPipeline,
     NotTopLevelPipeline,
     FrozenPipeline,
+    ThawnPipeline,
 }
 
 pub struct ContextMenuDetails {

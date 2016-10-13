@@ -79,6 +79,10 @@ compositor.
 
 ___
 
+*Note: It is important to make `browser/` code and `compositor/` code live in different threads.
+We assumed `browser/` lives in the script thread of the host page, and `compositor/` in a worker,
+but we could also have both is workers.*
+
 *Note: The `<viewport>` tag will, hopefully, be the only non-standard element
 that Servo will need to support. How to make it so that it's impossible to
 create a viewport element from regular web content? Maybe the viewport could

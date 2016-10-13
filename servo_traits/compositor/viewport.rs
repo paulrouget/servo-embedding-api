@@ -1,4 +1,6 @@
 pub trait Viewport: View {
+    fn get_id(&self) -> ViewportID;
+
     fn attach_browser(&self, browser: BrowserID);
     fn get_attached_browser(&self) -> Option<BrowserID>;
 
