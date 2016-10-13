@@ -73,10 +73,10 @@ impl MyCompositor {
                         // and that DOM element is linked to a StackingContextID
                         let toolbar_viewport = …;
                         let toolbar_id = …;
-                        let mut composite_and_transform = StackingContextProxy::get_composite_and_transform(toolbar_id).unwrap();
+                        let mut composite_and_transform = toolbar_viewport.get_composite_and_transform(toolbar_id).unwrap();
                         let transform = composite_and_transform.transform.post_translated(0,y,0);
                         composite_and_transform.transform = transform;
-                        StackingContextProxy::set_composite_and_transform(composite_and_transform);
+                        toolbar_viewport.set_composite_and_transform(toolbar_id, composite_and_transform);
 
                         // 2. resize and move content
                         let mut frame = viewport.get_content_frame();
@@ -119,8 +119,7 @@ impl MyCompositor {
                 let mut content_frame = frame.clone();
                 content_frame.coordinates.origin.x = toolbar_height;
                 content_frame.coordinates.size.height -= toolbar_height;
-                let viewport = self.compositor.new_viewport(frame, content_frame, overscroll_options);
-                viewport.attach_browser(browser);
+                let viewport = self.compositor.new_viewport(frame, content_frame, browser);
                 viewport.set_visible(visible);
                 let msg = BrowserMsg::NewViewport(viewport.get_id(), browser);
                 self.browser_sender.send(msg);
@@ -128,10 +127,10 @@ impl MyCompositor {
             CompositorMsg::KillViewport(viewpo) {
                 // Destroy viewport
             },
-            CompositorMsg::ShowConfirmDialog(browser, title, message, resp_chan) => {
+            CompositorMsg::ShowConfirmDialog(browser, title, message) => {
                 // build a popup, draw it somewhere, wait for keyboard or
                 // mouse events to see if the user clicks cancel or ok.
-                // then send boolean to resp_chan
+                // then send boolean back to browser
             },
             CompositorMsg::PreviewManyPipelines(pipelines) {
                 // Maybe get all views first and hide them

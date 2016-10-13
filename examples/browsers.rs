@@ -46,6 +46,11 @@ impl BrowserHelper {
             browser.set_current_entry_index(i + 1);
         }
     }
+    fn get_current_pipeline(browser) {
+        browser.get_current_entry()
+               .map(|e| e.pipeline_id)
+               .map(|id| browser.get_pipeline(id))
+    }
 }
 
 impl MyWindow { // One per native window
@@ -89,18 +94,14 @@ impl MyWindow { // One per native window
                             // there is a page to be loaded
                             browser.cancel_pending_pipeline();
                         }
-                        // get the current pipeline
-                        let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
-                        if let Some(pipeline) = pipeline {
-                            PipelineProxy::stop_loading(pipeline).expect("failed to reach pipeline");
+                        if let Some(p) = BrowserHelper::get_current_pipeline(browser) {
+                            p.stop_loading();
                         }
                     },
 
                     CMD_R => { // reload
-                        let browser = self.browsers[self.fg_browser_index];
-                        let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
-                        if let Some(pipeline) = pipeline {
-                            PipelineProxy::reload(pipeline).expect("failed to reach pipeline");
+                        if let Some(p) = BrowserHelper::get_current_pipeline(browser) {
+                            p.reload();
                         }
                     },
 
@@ -252,8 +253,8 @@ impl MyWindow { // One per native window
             return;
         }
 
-        let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
-        let state = PipelineProxy::get_pipeline_state(pipeline).expect("error");
+        let pipeline = BrowserHelper::get_current_pipeline(browser).unwrap();
+        let state = pipeline.get_pipeline_state();
 
         status = match state {
             Complete | Error(_) | Crash(_) => {
@@ -272,12 +273,12 @@ impl MySession {
     fn find_window_for_browser(&self, browser: BrowserID) -> &MyWindow {
         // […]
     },
-    fn find_browser_for_pipeline(&self, pipeline: PipelineProxy) -> BrowserID {
+    fn find_browser_for_pipeline_id(&self, pipeline_id: PipelineID) -> BrowserID {
         // This is not really handy. It's probably better to have a
-        // pipeline <-> browser hashmap, built with
+        // pipeline_id <-> browser hashmap, built with
         // BrowserHandler::current_entry_index_changed
         self.browsers.find(|b| {
-            b.get_current_entry().unwrap().pipeline_id == pipeline
+            b.get_current_entry().unwrap().pipeline_id == pipeline_id
         });
     }
     fn create_new_native_window(&self) {
@@ -297,19 +298,19 @@ impl MySession {
 
 impl PipelineHandler for MySession {
 
-    fn will_navigate(&self, pipeline: PipelineID, load_data: LoadData) {
+    fn will_navigate(&self, pipeline_id: PipelineID, load_data: LoadData) {
         match load_data.transition_type {
             LinkClicked(MiddleButton, _) |
             LinkClicked(_, CMD_KEY) |
             LinkClicked(_, CTRL_KEY) => {
-                let browser = self.find_browser_for_pipeline(pipeline);
+                let browser = self.find_browser_for_pipeline(pipeline_id);
                 let window = self.find_window_for_browser(browser);
                 window.create_new_browser(load_data, WindowDisposition::BackgroundTab);
                 // Will cancel navigation
                 false
             },
             JavaScript => {
-                let browser = self.find_browser_for_pipeline(pipeline);
+                let browser = self.find_browser_for_pipeline(pipeline_id);
                 let window = self.find_window_for_browser(browser);
                 window.create_new_browser(load_data, WindowDisposition::BackgroundTab);
                 false
@@ -319,9 +320,11 @@ impl PipelineHandler for MySession {
             },
             _ => {
                 // Will let navigation happen
-                let browser = self.find_browser_for_pipeline(pipeline);
+                let browser = self.find_browser_for_pipeline(pipeline_id);
                 if is_pin_tab(browser) { // the pin tab notion is an embedder thing
-                    let old_domain = Url::parse(PipelineProxy::get_url(pipeline)).unwrap();
+                    let pipeline = browser.get_pipeline(pipeline_id).unwrap();
+                    let old_url = pipeline.get_url();
+                    let old_domain = Url::parse(old_url).unwrap();
                     let new_domain = Url::parse(load_data.url).unwrap();
                     if old_domain != new_domain {
                         let window = self.find_window_for_browser(browser);
@@ -338,69 +341,78 @@ impl PipelineHandler for MySession {
         }
     }
 
-    fn title_changed(&self, pipeline: PipelineID) {
-        let title = PipelineProxy::get_title(pipeline).expect("error");
-        let browser = self.find_browser_for_pipeline(pipeline);
+    fn title_changed(&self, pipeline_id: PipelineID) {
+        let browser = self.find_browser_for_pipeline(pipeline_id);
+        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
+        let title = pipeline.get_title();
         // […] Update title in tab
     }
 
-    fn icons_changed(&self, pipeline: PipelineId) {
-        let icons = PipelineProxy::get_icons(pipeline).expect("error");
+    fn icons_changed(&self, pipeline_id: PipelineID) {
+        let browser = self.find_browser_for_pipeline(pipeline_id);
+        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
+        let icons = pipeline.get_icons();
         let best_fit = icons.fold(/*[…]*/);
-        let browser = self.find_browser_for_pipeline(pipeline);
         // […] Update icon in tab
     }
 
-    fn metas_changed(&self, pipeline, PipelineID) {
-        let metas = PipelineProxy::get_metas(pipeline).expect("error");
+    fn metas_changed(&self, pipeline_id, PipelineID) {
+        let browser = self.find_browser_for_pipeline(pipeline_id);
+        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
+        let metas = pipeline.get_metas();
         if let Some(meta) = metas.find(|m| m.name == "theme-color") {
             let color = meta.content;
-            let browser = self.find_browser_for_pipeline(pipeline);
             // […] Update color for tab
         }
 
     }
 
-    fn close(&self, pipeline: PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline);
-        // […] show dialog, then destroy browser
+    fn close(&self, pipeline_id: PipelineID) {
+        self.confirm(pipeline_id,
+                     "Wanna close?".to_owned(),
+                     "you will lose everything".to_owned())
+            .and_then(|| {
+                // […] then destroy browser
+            });
     }
 
-    fn new_window(&self, pipeline: PipelineID, mut disposition: WindowDisposition, load_data: LoadData) {
+    fn new_window(&self, pipeline_id: PipelineID, mut disposition: WindowDisposition, load_data: LoadData) {
         let window = if disposition == WindowDisposition::NewWindow {
             disposition = WindowDisposition::ForegroundTab
             self.create_new_native_window()
         } else {
-            let browser = self.find_browser_for_pipeline(pipeline);
+            let browser = self.find_browser_for_pipeline(pipeline_id);
             self.find_window_for_browser(browser)
         }
         window.create_new_browser(load_data, disposition);
     }
 
-    fn confirm(&self, pipeline: PipelineID, title: String, message: String, resp_chan: IpcSender<bool>) {
-        let browser = self.find_browser_for_pipeline(pipeline);
+    fn confirm(&self, pipeline_id: PipelineID, title: String, message: String) -> impl Future<Item=bool> {
+        let browser = self.find_browser_for_pipeline(pipeline_id);
         let window = self.find_window_for_browser(browser);
         let msg = CompositorMsg::ShowConfirmDialog(
             browser.get_id(),
             title,
-            message,
-            resp_chan);
+            message);
         window.compositor_sender.send(msg);
+        // Missing: return a Future that would resolve once
+        // the compositor get the information
     }
 
-    fn state_changed(&self, pipeline: PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline);
+    fn state_changed(&self, pipeline_id: PipelineID) {
+        let browser = self.find_browser_for_pipeline(pipeline_id);
         let window = self.find_window_for_browser(browser);
         window.update_progressbar();
 
-        let state = PipelineProxy::get_pipeline_state(pipeline).expect("error");
+        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
+        let state = pipeline.get_pipeline_state();
         match state {
             PipelineState::Error(_) => {
                 // Connection error
                 // Do something
             },
             PipelineState::Complete => {
-                let http_response = PipelineProxy::get_http_response(pipeline).expect("error").unwrap();
+                let http_response = pipeline.get_http_response().expect("error").unwrap();
                 let status = http_method.raw_status;
                 if status == 404 {
                     // Do something
@@ -413,8 +425,8 @@ impl PipelineHandler for MySession {
 
 impl BrowserHandler for MySession {
 
-    fn current_entry_index_changed(&self, browser, pipeline, index) {
-        // Update a map of browser <-> pipeline
+    fn current_entry_index_changed(&self, browser, pipeline_id, index) {
+        // Update a map of browser <-> pipeline_id
     }
 
     fn pipeline_pending(&self, browser: BrowserID) {
@@ -422,7 +434,7 @@ impl BrowserHandler for MySession {
         window.update_progressbar();
     }
 
-    fn pipeline_pending(&self, browser: BrowserID) {
+    fn no_pipeline_pending(&self, browser: BrowserID) {
         let window = self.find_window_for_browser(browser);
         window.update_progressbar();
     }
