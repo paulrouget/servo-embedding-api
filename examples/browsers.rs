@@ -54,6 +54,9 @@ impl BrowserHelper {
 }
 
 impl MyWindow { // One per native window
+    fn get_my_session() -> MySession {
+        // …
+    }
     fn handle_compositor_message(&self, msg) {
         match msg {
 
@@ -140,7 +143,13 @@ impl MyWindow { // One per native window
                             Some(closed_tab) => { closed_tab },
                             None => return,
                         }
-                        let browser = Browser::new(&self.session, handlers/*FIXME:see create_new_browser*/);
+                        let session = self.get_my_session();
+                        let browser = Browser::new(&session.session, // Session
+                                                   "".to_owned(),
+                                                   &session, // BrowserHandler
+                                                   &session, // pipeline handler
+                                                   &session, // http handler
+                                                  );
                         browser.restore_entries(closed_tab.entries, closed_tab.current);
                         self.browsers.push(browser);
                         let msg = CompositorMsg::CreateViewport(browser.get_id(), true);
@@ -212,13 +221,12 @@ impl MyWindow { // One per native window
                           load_data: LoadData,
                           opener: Option<PipelineID>
                           disposition: WindowDisposition) {
-        let browser = Browser::new(&self.session,
-                                  "".to_owned(),
-                                  // FIXME: not sure if that's valid rust,
-                                  // can we pass self as BrowserHandler, a trait?
-                                  &self, // browser handler
-                                  &self, // pipeline handler
-                                  &self, // http handler
+        let session = self.get_my_session();
+        let browser = Browser::new(&session.session, // Session
+                                   "".to_owned(),
+                                   &session, // BrowserHandler
+                                   &session, // pipeline handler
+                                   &session, // http handler
                                   );
 
         browser.navigate(load_data, opener);
