@@ -42,7 +42,7 @@ A [`Browser`](servo_traits/browser/browser.rs) is associated to one [`Session`](
 
 A [`BrowserHandler`](servo_traits/browser/browser.rs) reports all the activity of a browser (history changes, navigation, …).
 
-A [`PipelineProxy`](servo_traits/browser/pipeline.rs) gives access to document properties and methods.
+A [`Pipeline`](servo_traits/browser/pipeline.rs) gives access to document properties and methods.
 
 A [`PipelineHandler`](servo_traits/browser/pipeline.rs) reports all the activity of a document (load state, url changes, title changes, …).
 
