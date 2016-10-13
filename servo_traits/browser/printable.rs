@@ -27,7 +27,7 @@ pub struct PrintOptions {
     print_selection_only: bool,
 }
 
-// Implemented by Browser, or maybe PipelineProxy
+// Implemented by Browser, or maybe Pipeline
 pub trait Printable {
     fn printPage(&self, options: PrintOptions) -> impl Future<Item=(),Error=()>;
     fn printPageToPDF(&self, options: PrintOptions) -> impl Future<Item=(),Error=()>;

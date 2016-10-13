@@ -10,6 +10,13 @@ pub struct HistoryEntry {
     pipeline_id: Option<TopLevelPipelineID>,
 }
 
+pub enum PipelineAccessError {
+    NoSuchPipeline,
+    NotTopLevelPipeline,
+    FrozenPipeline,
+    ThawnPipeline,
+}
+
 enum Event {
     // FIXME: event details missing
     Mouse(),
@@ -76,6 +83,13 @@ pub trait Browser {
     // consumed by the content (scroll actually happened, key event
     // has been typed, preventDefault() has been called, …)
     fn handle_event(&self, event: Event) -> impl Future<Item = bool>;
+
+    fn get_pipeline(&self, id: pipeline_id) -> Result<Pipeline,PipelineAccessError>;
+    fn get_top_level_pipeline(&self, id: pipeline_id) -> Result<TopLevelPipeline,PipelineAccessError>;
+    
+
+    // Used, for example, when a right click event is not consumed by content, to show a context menu
+    fn get_content_from_point(&self, point: Point2D<f32>) -> impl Future<Item=ContentDescriptionAtPoint>;
 }
 
 pub trait BrowserHandler {

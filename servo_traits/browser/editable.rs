@@ -1,9 +1,9 @@
 // This is usually used to build the application Edit menu.
-// Implemented by Browser, or maybe PipelineProxy
+// Implemented by Browser, or maybe Pipeline
 
 pub struct EditableState {
-    selected_test: String,
-    isEditable: bool,
+    selected_text: String,
+    is_editable: bool,
     can_undo: bool,
     can_redo: bool,
     can_cut: bool,

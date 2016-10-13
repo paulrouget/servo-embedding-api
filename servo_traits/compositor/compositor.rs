@@ -47,8 +47,7 @@ pub trait Compositor {
     fn new(drawable: &Drawable) -> Compositor;
     fn get_id(&self) -> CompositorID;
     fn invalidate_frame(&self);
-    // FIXME: don't we want to attach browser right away?
-    fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame) -> Viewport;
+    fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame, browser: BrowserID) -> Viewport;
     fn get_viewports(&self) -> Iterator<Viewport>;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
     fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;
@@ -60,7 +59,8 @@ pub trait PipelineView : View {
     // This view doesn't contrain the geometry of the pipeline in any way.
     // It's possible to render a pipeline multiple times.
     // This is usually used to preview a frozen pipeline from history.
-    fn attach_pipeline(&self, pipeline: PipelineID);
+    // 
+    // No method?
 }
 
 pub trait Drawable {

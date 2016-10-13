@@ -1,20 +1,20 @@
-struct MetaTag {
+pub struct MetaTag {
   name: String;
   content: String;
 }
 
-enum WindowDisposition {
+pub enum WindowDisposition {
   ForegroundTab,
   BackgroundTab,
   NewWindow,
 }
 
-enum PromptType {
+pub enum PromptType {
   Alert,
   Confirm,
 }
 
-enum PipelineState {
+pub enum PipelineState {
     // Document not created yet.
     // Period between the time the user clicks on a link and the time the previous document becomes inactive
     // FIXME: not sure we will ever have access to a pending pipeline
@@ -35,7 +35,7 @@ enum PipelineState {
     Complete,
 }
 
-enum SaveType {
+pub enum SaveType {
     // Save only the HTML of the page.
     HTMLOnly,
     // Save complete-html page.
@@ -48,7 +48,7 @@ enum SaveType {
 pub struct PipelineError {
     final_url: String,
     // Chrome error list: https://cs.chromium.org/chromium/src/net/base/net_error_list.h
-    // FIXME: maybe an enum should be better
+    // FIXME: an enum would be better
     code: u32,
     // Human readable
     description: String,
@@ -68,18 +68,6 @@ pub struct Icon {
     rel: String;
 }
 
-pub enum PipelineProxyError {
-    NoSuchPipeline,
-    NotTopLevelPipeline,
-    FrozenPipeline,
-    ThawnPipeline,
-}
-
-pub struct ContextMenuDetails {
-    point: Point2D<f32>,
-    // FIXME: http://electron.atom.io/docs/api/web-contents/#event-context-menu
-}
-
 pub struct ConsoleMessageDetails {
     level: ConsoleLevel,
     message: String,
@@ -89,111 +77,108 @@ pub struct ConsoleMessageDetails {
 }
 
 
-// It is likely that the embedder only wants to control the current and top level
-// pipeline. So we could expect PipelineProxy's and TopLevelPipelineProxy's methods
-// to be part of Browser. But we don't want to set that in stone. Maybe in the future
-// we want to give access to inner <iframe>' pipeline, or frozen pipelines.
-pub trait PipelineProxy {
+// It is likely that the embedder only wants to control the current and top level pipeline. So we
+// could expect Pipeline's and TopLevelPipeline's methods to be part of Browser. But we don't want
+// to set that in stone. Maybe in the future we want to give access to inner <iframe>' pipeline, or
+// frozen pipelines.
+// In term of lifetime, we want to make sure an instance of Pipeline doesn't outlive its internal's
+// counter-part.
 
-    // Happens during redirects for example.
-    fn get_url(pipeline: PipelineId) -> Result<String,PipelineProxyError>;
-    fn get_title(pipeline: PipelineId) -> Result<Option<String>,PipelineProxyError>;
-    fn get_http_response(pipeline: PipelineId) -> Result<Option<HTTPResponse>,PipelineProxyError>;
+pub trait Pipeline {
+    // URL changes during redirects
+    fn get_url(&self) -> String;
+    fn get_title(&self) -> Option<String>;
+    fn get_http_response(&self) -> Option<HTTPResponse>;
 
-    fn exists(pipeline: PipelineId) -> bool;
-    fn is_current(pipeline: PipelineId) -> Result<bool,PipelineProxyError>;
+    fn is_current(&self) -> bool;
 
     // Used to replace mozbrowserconnected, mozbrowserloadstart, mozbrowserloadend
     // Use performance for time stamps.
-    fn get_pipeline_state(pipeline: PipelineId) -> Result<PipelineState,PipelineProxyError>;
+    fn get_state(&self) -> PipelineState;
 
     // See Performance.webidl and PerformanceTiming.webidl
     // Necessary to implement https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
-    fn get_performance(pipeline: PipelineId) -> Result<Performance,PipelineProxyError>;
+    fn get_performance(&self) -> Performance;
 
-    fn get_icons(pipeline: PipelineId) -> Result<Iterator<Icon>,PipelineProxyError>;
-    fn get_metas(pipeline: PipelineId) -> Result<Iterator<MetaTag>,PipelineProxyError>;
+    fn get_icons(&self) -> Iterator<Icon>;
+    fn get_metas(&self) -> Iterator<MetaTag>;
 
-    fn stop_loading(pipeline: PipelineId) -> Result<(),PipelineProxyError>;
+    fn stop_loading(&self);
 
     // Will destroy that pipeline and create a new one
-    fn reload(pipeline: PipelineId) -> Result<(),PipelineProxyError>;
-    fn clear_cache_and_reload(pipeline: PipelineId) -> Result<(),PipelineProxyError>;
+    fn reload(&self);
+    fn clear_cache_and_reload(&self);
 
-    fn insertCSS(pipeline: PipelineId, code: String) -> Result<(),PipelineProxyError>;
+    fn insertCSS(&self, code: String);
 
-    fn evaluateScript(pipeline: PipelineId, code: String, only_for_frame_script: bool) -> Result<impl Future<Item = JSObject>,PipelineProxyError>;
-
-
+    fn evaluateScript(&self, code: String, only_for_frame_script: bool) -> impl Future<Item = JSObject>;
 }
 
 // Pipeline methods that only work for top level pipelines
-pub trait TopLevelPipelineProxy {
+pub trait TopLevelPipeline : Pipeline {
 
-    fn get_hovered_link(pipeline: TopLevelPipelineId) -> Result<Option<String>,PipelineProxyError>;
-    fn get_connection_security(pipeline: TopLevelPipelineId) -> Result<ConnectionSecurity,PipelineProxyError>;
+    fn get_hovered_link(&self) -> Option<String>;
+    fn get_connection_security(&self) -> ConnectionSecurity;
 
     // We want to be able to render frozen pipeline, so we need
     // a way to save the rendering.
     // FIXME: do we really want to let the client handle that?
-    fn set_save_rendering_strategy(pipeline: TopLevelPipelineId, strategy: SaveRenderingStrategy) -> Result<(),PipelineProxyError>;
+    fn set_save_rendering_strategy(&self, strategy: SaveRenderingStrategy);
 
-    fn capture_page(pipeline: TopLevelPipelineId, source: Rect, destination: Rect) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
-    fn save_page(pipeline: TopLevelPipelineId, save_type: SaveType) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
-    fn download_url(pipeline: TopLevelPipelineId, url: String) -> Result<impl Future<Item = Blob>,PipelineProxyError>;
+    fn capture_page(&self, source: Rect, destination: Rect) -> impl Future<Item = Blob>;
+    fn save_page(&self, save_type: SaveType) -> impl Future<Item = Blob>;
+    fn download_url(&self, url: String) -> impl Future<Item = Blob>;
 
-    fn get_blocked_content_count(pipeline: TopLevelPipelineId) -> Result<BlockedContentCount,PipelineProxyError>;
+    fn get_blocked_content_count(&self) -> BlockedContentCount;
 }
 
 
 pub trait PipelineHandler {
 
     // Warning: might not be current!
-    fn created(&self, pipeline: PipelineId); // Only after pending
-    fn destroyed(&self, pipeline: PipelineId);
+    fn created(&self, pipeline: PipelineID); // Only after pending
+    fn destroyed(&self, pipeline: PipelineID);
 
-    fn frozen(&self, pipeline: PipelineId);
-    fn thawn(&self, pipeline: PipelineId);
+    fn frozen(&self, pipeline: PipelineID);
+    fn thawn(&self, pipeline: PipelineID);
 
-    fn url_changed(&self, pipeline: PipelineId);
-    fn title_changed(&self, pipeline: PipelineId);
-    fn icons_changed(&self, pipeline: PipelineId);
-    fn metas_changed(&self, pipeline: PipelineId);
-    fn state_changed(&self, pipeline: PipelineId);
-    fn hovered_link_changed(&self, pipeline: PipelineId);
-    fn connection_security_changed(&self, pipeline: PipelineId);
+    fn url_changed(&self, pipeline: PipelineID);
+    fn title_changed(&self, pipeline: PipelineID);
+    fn icons_changed(&self, pipeline: PipelineID);
+    fn metas_changed(&self, pipeline: PipelineID);
+    fn state_changed(&self, pipeline: PipelineID);
+    fn hovered_link_changed(&self, pipeline: PipelineID);
+    fn connection_security_changed(&self, pipeline: PipelineID);
 
     // Up to the embedder to update the corresponding viewport
-    fn resize(&self, pipeline: PipelineId, Size2D<f32>);
-    fn move(&self, pipeline: PipelineId, Point2D<f32>);
+    fn resize(&self, pipeline: PipelineID, Size2D<f32>);
+    fn move(&self, pipeline: PipelineID, Point2D<f32>);
 
     // Up to the embedder to destroy or not the Browser
-    fn close(&self, pipeline: PipelineId);
+    fn close(&self, pipeline: PipelineID);
 
     // Warning: Cmd/Ctrl/Click should not trigger new_window. It's up to
     // the embedder to decide what to do when a link is clicked with a keyboard
     // modifier. See will_navigate and LoadData::TransitionType::LinkClicked.
-    fn new_window(&self, pipeline: PipelineId, disposition: WindowDisposition, load_data: LoadData, frame_name: String);
-    fn context_menu(&self, pipeline: PipelineId, option: ContextMenuDetails);
-    fn fullscreen(&self, pipeline: PipelineId);
-    fn exit_fullscreen(&self, pipeline: PipelineId);
-    fn console_message(&self, pipeline: PipelineId, message: ConsoleMessageDetails);
+    fn new_window(&self, pipeline: PipelineID, disposition: WindowDisposition, load_data: LoadData, frame_name: String);
+    fn fullscreen(&self, pipeline: PipelineID);
+    fn exit_fullscreen(&self, pipeline: PipelineID);
+    fn console_message(&self, pipeline: PipelineID, message: ConsoleMessageDetails);
     // It's possible to cancel navigation. For example, pin
     // tabs might want to open links from different domain
     // into a different tab.
     // false: navigation canceled.
-    fn will_navigate(&self, pipeline: PipelineId, load_data: LoadData) -> bool;
+    fn will_navigate(&self, pipeline: PipelineID, load_data: LoadData) -> bool;
 
-    // FIXME: anyway to not use IpcSender but Future?
-    fn alert(&self, pipeline: PipelineId, title: String, message: String, resp_chan: IpcSender<()>);
-    fn confirm(&self, pipeline: PipelineId, title: String, message: String, resp_chan: IpcSender<bool>);
-    fn prompt(&self, pipeline: PipelineId, title: String, message: String, resp_chan: IpcSender<String>);
+    fn alert(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<>;
+    fn confirm(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<Item=bool>;
+    fn prompt(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<Item=String>;
     // Send Ok(username,password) or Err() if cancelled.
-    fn username_and_password(&self, pipeline: PipelineId, resp_chan: IpcSender<Result<(String,String),()>>);
+    fn username_and_password(&self, pipeline: PipelineID) -> impl Future<Item=Result<(String,String),()>>;
     // Send back true if servo should ignore the certificate error
-    fn ignore_certificate_error(&self, pipeline: PipelineId, error: String, certificate: CertificateInfo, resp_chan: IpcSender<bool>);
+    fn ignore_certificate_error(&self, pipeline: PipelineID, error: String, certificate: CertificateInfo) -> impl Future<Item=bool>;
 
     // One or several content blockers have blocked content or discovered
     // blockable content.
-    fn blocked_content_count_changed(&self, pipeline: PipelineId);
+    fn blocked_content_count_changed(&self, pipeline: PipelineID);
 }
