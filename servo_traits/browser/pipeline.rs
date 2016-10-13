@@ -27,11 +27,11 @@ enum PipelineState {
 
     // Following values are the same as document.readyState
 
-    // The document is still loading. (same as document.readyState)
+    // The document is still loading.
     Loading,
-    // The document has finished loading and the document has been parsed but sub-resources such as images, stylesheets and frames are still loading. (same as document.readyState)
+    // The document has finished loading and the document has been parsed but sub-resources such as images, stylesheets and frames are still loading.
     Interactive,
-    // The document and all sub-resources have finished loading. The state indicates that the load event has been fired. (same as document.readyState)
+    // The document and all sub-resources have finished loading. The state indicates that the load event has been fired.
     Complete,
 }
 
