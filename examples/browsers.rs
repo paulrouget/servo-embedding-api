@@ -5,10 +5,16 @@ struct MySession {
     app_sender: IpcSender<AppMsg>,
 }
 
+struct ClosedTab {
+    entries: Vec<LoadData>,
+    current: u32,
+}
+
 struct MyWindow {
     compositor_sender: IpcSender<CompositorMsg>,
     browsers: Vec<BrowserID>,
     fg_browser_index: u32,
+    closed_tabs: Vec<ClosedTab>,
 }
 
 struct BrowserHelper { }
@@ -39,56 +45,126 @@ impl BrowserHelper {
 impl MyWindow { // One per native window
     fn handle_compositor_message(&self, msg) {
         match msg {
-            KeyboardEvent(event) => {
 
-                if event.key == CMD_LEFT { // Cmd-left, go back
-                    let browser = self.browsers[self.fg_browser_index];
-                    BrowserHelper::go_back(browser);
-                }
+            BrowserMsg::NewViewport(viewport, browser) => {
+                // Manage a hashmap of viewport/browser
+            }
 
-                if event.key == ESC { // Escape, stop loading
-                    let browser = self.browsers[self.fg_browser_index];
-                    if browser.has_pending_pipeline() {
-                        // there is a page to be loaded
-                        browser.cancel_pending_pipeline();
-                    } else {
+            BrowserMsg::MouseEvent(event, browserid) => {
+                let browser = GetBrowserFromID(browseid);
+                browserid.handle_event(event);
+            }
+
+            BrowserMsg::KeyboardEvent(event) => {
+
+                match event.key {
+
+                    CMD_LEFT => { // go back
+                        let browser = self.browsers[self.fg_browser_index];
+                        BrowserHelper::go_back(browser);
+                    },
+
+                    ESC => { // stop loading
+                        let browser = self.browsers[self.fg_browser_index];
+                        if browser.has_pending_pipeline() {
+                            // there is a page to be loaded
+                            browser.cancel_pending_pipeline();
+                        }
                         // get the current pipeline
                         let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
                         if let Some(pipeline) = pipeline {
                             PipelineProxy::stop_loading(pipeline).expect("failed to reach pipeline");
                         }
-                    }
-                }
+                    },
 
-                if event.key == CMD_R { // Cmd R, reload
-                    let browser = self.browsers[self.fg_browser_index];
-                    let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
-                    if let Some(pipeline) = pipeline {
-                        PipelineProxy::reload(pipeline).expect("failed to reach pipeline");
-                    }
-                }
-
-                if event.key == CMD_L { // Cmd-L, focus url bar
-                    let browser = self.browsers[self.fg_browser_index];
-                    browser.handle_event(event).and_then(|consumed| {
-                        if !consumed {
-                            // […] focus urlbar
+                    CMD_R => { // reload
+                        let browser = self.browsers[self.fg_browser_index];
+                        let pipeline = browser.get_entries().find(|e| e.current).unwrap().pipeline_id;
+                        if let Some(pipeline) = pipeline {
+                            PipelineProxy::reload(pipeline).expect("failed to reach pipeline");
                         }
-                    });
-                }
+                    },
 
-                if event.key == CMD_Q { // Cmd-Q, quit
-                    let msg = AppMsg::Quit();
-                    // not sure how to reach the session
-                    session.app_sender(msg);
-                }
+                    CMD_L => { // focus url bar
+                        let browser = self.browsers[self.fg_browser_index];
+                        browser.handle_event(event).and_then(|consumed| {
+                            if !consumed {
+                                // […] focus urlbar
+                            }
+                        });
+                    }
 
+                    CMD_Q => { // quit
+                        let msg = AppMsg::Quit();
+                        // not sure how to reach the session
+                        session.app_sender(msg);
+                    }
+
+                    CMD_W => { // close tab
+                        let browser = …; // Tab to close
+                        let viewport = …; // get viewport from hashmap
+                        let msg = CompositorMsg::KillViewport(viewport);
+                        self.compositor_sender.send(msg);
+                        let load_data = browser.get_entries().map(|e| e.load_data);
+                        let idx = browser.get_current_entry_index();
+                        let closed_tab = ClosedTab {
+                            entries: load_data,
+                            current: idx,
+                        }
+                        self.closed_tabs.push(closed_tab);
+                        // Destroy browser
+                    }
+
+                    CMD_SHIT_T => {
+                        let closed_tab = match self.closed_tabs.pop() {
+                            Some(closed_tab) => { closed_tab },
+                            None => return,
+                        }
+                        let browser = Browser::new(&self.session, handlers/*FIXME:see create_new_browser*/);
+                        browser.restore_entries(closed_tab.entries, closed_tab.current);
+                        self.browsers.push(browser);
+                        let msg = CompositorMsg::CreateViewport(browser.get_id(), true);
+                        self.compositor_sender.send(msg);
+                        self.fg_browser_index = self.browsers.size - 1;
+                    }
+
+                }
             }
         }
     }
 
-    fn user_entered_new_url(&self, url: String, user_value: String) {
-        let load_data = LoadData {
+    fn user_hit_enter_in_urlbar(&self, url: String, user_value: String) {
+        let browser = self.browsers[self.fg_browser_index];
+        if browser.has_prerendering_pipeline() {
+            // We assumed that the prerendering pipeline would
+            // have been dismissed if the user entered a different
+            // url
+            browser.navigate_to_prerendering_pipeline(None);
+        } else {
+            let load_data = LoadData {
+                url: url.clone(),
+                user_typed_value: user_value.clone(),
+                transition_type: TransitionType::Typed,
+                http_method: HTTPMethod::GET,
+                scroll_restoration_mode: ScrollRestoration::Auto,
+                title: None,
+                http_headers: None,
+                body: None,
+                referrer_url: None,
+                scroll_position: None,
+                js_state_object: None,
+                form_data: None,
+            }
+            browser.navigate(load_data, None);
+        }
+    }
+
+    fn user_about_to_hit_enter_in_urlbar(&self, url: String, user_value: String) {
+        let browser = self.browsers[self.fg_browser_index];
+        if browser.has_prerendering_pipeline() {
+            browser.cancel_prerendering_pipeline();
+        }
+        browser.build_prerendering_pipeline(LoadData {
             url: url.clone(),
             user_typed_value: user_value.clone(),
             transition_type: TransitionType::Typed,
@@ -101,16 +177,22 @@ impl MyWindow { // One per native window
             scroll_position: None,
             js_state_object: None,
             form_data: None,
-        }
-        let browser = self.browsers[self.fg_browser_index];
-        browser.navigate(load_data, None);
+        });
     }
+
+    fn invalidate_prerendering_pipeline() {
+        // Called if the preloading pipeline makes
+        let browser = self.browsers[self.fg_browser_index];
+        if browser.has_prerendering_pipeline() {
+            browser.cancel_prerendering_pipeline();
+        }
+    },
 
     fn create_new_browser(&self,
                           load_data: LoadData,
                           opener: Option<PipelineID>
                           disposition: WindowDisposition) {
-        let browser = Browser:new(&self.session,
+        let browser = Browser::new(&self.session,
                                   "".to_owned(),
                                   // FIXME: not sure if that's valid rust,
                                   // can we pass self as BrowserHandler, a trait?
@@ -253,6 +335,24 @@ impl PipelineHandler for MySession {
             message,
             resp_chan);
         window.compositor_sender.send(msg);
+    }
+
+    fn state_changed(&self, pipeline: PipelineID) {
+        let state = PipelineProxy::get_pipeline_state(pipeline).expect("error");
+        match state {
+            PipelineState::Error(_) => {
+                // Connection error
+                // Do something
+            },
+            PipelineState::Complete => {
+                let http_response = PipelineProxy::get_http_response(pipeline).expect("error").unwrap();
+                let status = http_method.raw_status;
+                if status == 404 {
+                    // Do something
+                }
+            }
+            _ => {},
+        }
     }
 }
 

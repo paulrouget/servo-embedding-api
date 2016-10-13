@@ -65,9 +65,14 @@ impl MyCompositor {
                 let mut content_frame = frame.clone();
                 content_frame.coordinates.origin.x = toolbar_height;
                 content_frame.coordinates.size.height -= toolbar_height;
-                self.compositor.new_viewport(frame, content_frame, overscroll_options)
-                               .attach_browser(browser)
-                               .set_visible(visible);
+                let viewport = self.compositor.new_viewport(frame, content_frame, overscroll_options);
+                viewport.attach_browser(browser);
+                viewport.set_visible(visible);
+                let msg = BrowserMsg::NewViewport(viewport.get_id(), browser);
+                self.browser_sender.send(msg);
+            },
+            CompositorMsg::KillViewport(viewpo) {
+                // Destroy viewport
             },
             CompositorMsg::ShowConfirmDialog(browser, title, message, resp_chan) => {
                 // build a popup, draw it somewhere, wait for keyboard or
