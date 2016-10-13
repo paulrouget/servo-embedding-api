@@ -47,6 +47,7 @@ pub trait Compositor {
     fn new(drawable: &Drawable) -> Compositor;
     fn get_id(&self) -> CompositorID;
     fn invalidate_frame(&self);
+    // FIXME: don't we want to attach browser right away?
     fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame) -> Viewport;
     fn get_viewports(&self) -> Iterator<Viewport>;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;

@@ -42,7 +42,7 @@ pub trait Viewport: View {
     // The content will be resized and/or scrolled. DOM events are sent only once
     // send_resize_and_scroll_events_to_browser is called.
 
-    fn update_content_frame(&self, content_frame: ContentFrame, Option<Animation>) -> impl Future<Item = ContentFrame>;
+    fn set_content_frame(&self, content_frame: ContentFrame, Option<Animation>) -> impl Future<Item = ContentFrame>;
 
     fn send_resize_and_scroll_events_to_browser(&self);
 
@@ -60,6 +60,7 @@ pub struct CompositeAndTransform {
     transform: Matrix4D<f32>,
 }
 
+// FIXME: This proxy thing… it doesn't work
 pub trait StackingContextProxy {
     fn set_composite_and_transform(id: StackingContextID, transform: CompositeAndTransform, Option<Animation>) -> Result<(),()>;
     fn get_composite_and_transform(id: StackingContextID) -> Result<CompositeAndTransform,()>;
