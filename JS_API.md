@@ -3,70 +3,101 @@
 The current Browser API "pollutes" Servo's code base, bends standards
 (`<iframe mozbrowser>`) and security policies (cross-domain XHR).
 
-We want the JS API to be as self contained as possible. It doesn't have to live within Servo's code base.
+We want the JS API to be as self contained as possible.
+It doesn't have to live within Servo's code base.
 
-We like the Electron approach where a webpage embeds a webpage, with a JS runtime on the side offering access to the OS.
+We like the Electron approach where a webpage embeds a webpage,
+with a JS runtime on the side offering access to the OS.
 
 The idea is to make Servo embed itself.
 
-Here is a possible approach:
+Here is a possible approach
+
+---
+
+A JS app is made out of 4 files:
+- app.js
+- window.html
+- window.js
+- compositor.js
 
 ___
 
-[Build a JS runtime](https://github.com/servo/servo/issues/7379).
-An event loop + Spidermonkey + bindings
+*app.js* is run via a [JS runtime](https://github.com/servo/servo/issues/7379).
+An event loop + Spidermonkey + bindings.
+Here we're not talking about Servo's JS runtime. Just Spidermonkey by itself.
 
 On launch: `var browser1 = NewNativeWindow("./window.html")`
 
-Behind NewNativeWindow, Rust code:
+Behind `NewNativeWindow`, Rust code:
 - create a native window (let's say a glutin window)
-- create a Compositor out of the window
-- create a full-window Viewport
-- create and attach a Browser to the Viewport, load window.html, with a special module resolver (see below)
-- return the corresponding JS Browser object
+- load libservo
+- create a Servo's [Compositor](servo_traits/compositor/compositor.rs) out of the window (wrapped as a [Drawable](servo_traits/compositor/compositor.rs))
+- create a full-window [Viewport](servo_traits/compositor/viewport.rs)
+- create and attach a [Browser](servo_traits/browser/browser.rs) to the Viewport, load `window.html`, with a special module resolver (see below)
+- a JS binding translates the Rust Browser into a JS Browser object (`browser1`)
 
-At this point, window.html is rendered full window in the native window.
+At this point, *window.html* is rendered full window in the native window.
 
 We want that web page to be able to create other windows within
 that window (like `<iframes>`, but we don't want to re-use an existing element).
 
-The Browser JS API would be accessible from this Browser via a module.
-Browser::register_js_module_resolver makes this possible.
-The JS code executed in this Browser would have access to an ECMAScript module that we will call "Servo".
+To do so, we need to be able to create a Browser and a Viewport in JavaScript.
+
+### Browser:
+
+To expose JS bindings to *window.js*, when the window.html' browser is created
+in `NewNativeWindow`, a module resolver is registered via
+`Browser::register_js_module_resolver`
+
+The binding will then be accessible from via a JS module:
 
 `import {Browser} from "Servo";`
 
 This is how we give special privilege to a Browser.
 
-At this point, the JS code (`<script>` within browser1) can create a new browser (a tab): `var browser2 = new Browser()`.
-This first tab is the second Browser created. Let's create a second tab: `var browser3 = new Browser()`.
+At this point, the JS code (`<script>` within `browser1`) can create a new browser (a tab):
+`var browser2 = new Browser()`.
+This first tab is the second Browser created.
+Let's create a second tab: `var browser3 = new Browser()`.
+
+At this point, 3 browsers are accessible:
+- browser1, in app.js, run in the JS runtime. It's the top level browser.
+- browser2 and browser3, in window.js, run in Servo JS runtime. Two tabs.
 
 *Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
-are inside another has no implication.*
+are "inside" browser1 has no implication.*
 
-This is not enough, as these new tabs would be headless. A Viewport object is necessary.
+### Viewport:
+
+This is not enough, as these new tabs would be headless. A Viewport per Browser is necessary.
+`browser1` already has a viewport, created in Rust in `NewNativeWindow`.
 
 We want the geometry of the viewport to be part of the layout of the page.
-Servo would allow the creation of a `<viewport>` element that could be attached
-to the browsers. The layout thread of the top level Browser would update the
-actual viewport coordinates and size.
+To do so, Servo would implement a special DOM element called `<viewport>`,
+that can be used to host a Browser.
+The layout thread of the top level Browser would update the actual Viewport
+coordinates and size.
 
-The Viewport methods are not accessible from a script thread.
+The Viewport methods are not accessible from browser1 script thread.
 Same for the Compositor methods.
 
 ```
-import {Browser, CompositorWorker} from "Servo";
+import {CompositorWorker} from "Servo";
 var cw = new CompositorWorker('compositor.js')
 ```
 
 CompositorWorker is a [SharedWorker](https://html.spec.whatwg.org/multipage/workers.html#sharedworker)
-with access to a Compositor object (giving access to all the viewport object).
+run in Servo's Compositor thread, where Compositor's methods are accessible.
 
 Browser JS code and Compositor JS code can communicate via message passing.
 
-Each port the SharedWorker is a viewport (3 here).
+Each port of the SharedWorker is a viewport (3 here).
 
 That means all browsers in a window share the same compositor.
+
+*note: the compositor created in NewNativeWindow and compositor.js would run in the same
+thread. Not sure if that is possible*
 
 # Life of an event
 
