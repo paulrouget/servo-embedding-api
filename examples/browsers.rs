@@ -51,6 +51,19 @@ impl BrowserHelper {
                .map(|e| e.pipeline_id)
                .map(|id| browser.get_pipeline(id))
     }
+    fn create_new_viewport_and_browser(session, compositor) {
+        let (sender, receiver) = ipc::channel().unwrap();
+        let msg = CompositorMsg::CreateViewport(sender);
+        compositor.send(msg);
+        let viewport_id = receiver.recv().unwrap();
+        Browser::new(session.session, // Session
+                     "".to_owned(),
+                     viewport_id,
+                     session, // BrowserHandler
+                     session, // pipeline handler
+                     session, // http handler
+                     );
+    }
 }
 
 impl MyWindow { // One per native window
@@ -59,10 +72,6 @@ impl MyWindow { // One per native window
     }
     fn handle_compositor_message(&self, msg) {
         match msg {
-
-            BrowserMsg::NewViewport(viewport, browser) => {
-                // Manage a hashmap of viewport/browser
-            }
 
             BrowserMsg::MouseEvent(event, browserid) => {
                 let browser = GetBrowserFromID(browseid);
@@ -144,16 +153,9 @@ impl MyWindow { // One per native window
                             None => return,
                         }
                         let session = self.get_my_session();
-                        let browser = Browser::new(&session.session, // Session
-                                                   "".to_owned(),
-                                                   &session, // BrowserHandler
-                                                   &session, // pipeline handler
-                                                   &session, // http handler
-                                                  );
+                        let browser = BrowserHelper::create_new_viewport_and_browser(session, self.compositor_sender);
                         browser.restore_entries(closed_tab.entries, closed_tab.current);
                         self.browsers.push(browser);
-                        let msg = CompositorMsg::CreateViewport(browser.get_id(), true);
-                        self.compositor_sender.send(msg);
                         self.fg_browser_index = self.browsers.size - 1;
                     }
 
@@ -217,27 +219,19 @@ impl MyWindow { // One per native window
         }
     },
 
-    fn create_new_browser(&self,
+    fn add_browser(&self,
                           load_data: LoadData,
                           opener: Option<PipelineID>
                           disposition: WindowDisposition) {
-        let session = self.get_my_session();
-        let browser = Browser::new(&session.session, // Session
-                                   "".to_owned(),
-                                   &session, // BrowserHandler
-                                   &session, // pipeline handler
-                                   &session, // http handler
-                                  );
-
-        browser.navigate(load_data, opener);
 
         if disposition == WindowDisposition::NewWindow {
             // Error
         }
 
+        let session = self.get_my_session();
+        let browser = BrowserHelper::create_new_viewport_and_browser(session, self.compositor_sender);
+        browser.navigate(load_data, opener);
         self.browsers.push(browser);
-        let msg = CompositorMsg::CreateViewport(browser.get_id(), true);
-        self.compositor_sender.send(msg);
         if disposition == WindowDisposition::ForegroundTab {
             self.fg_browser_index = self.browsers.size - 1;
             // […] more stuff
@@ -313,14 +307,14 @@ impl PipelineHandler for MySession {
             LinkClicked(_, CTRL_KEY) => {
                 let browser = self.find_browser_for_pipeline(pipeline_id);
                 let window = self.find_window_for_browser(browser);
-                window.create_new_browser(load_data, WindowDisposition::BackgroundTab);
+                window.add_browser(load_data, WindowDisposition::BackgroundTab);
                 // Will cancel navigation
                 false
             },
             JavaScript => {
                 let browser = self.find_browser_for_pipeline(pipeline_id);
                 let window = self.find_window_for_browser(browser);
-                window.create_new_browser(load_data, WindowDisposition::BackgroundTab);
+                window.add_browser(load_data, WindowDisposition::BackgroundTab);
                 false
             }
             Reload => {
@@ -336,7 +330,7 @@ impl PipelineHandler for MySession {
                     let new_domain = Url::parse(load_data.url).unwrap();
                     if old_domain != new_domain {
                         let window = self.find_window_for_browser(browser);
-                        window.create_new_browser(load_data, WindowDisposition::ForegroundTab);
+                        window.add_browser(load_data, WindowDisposition::ForegroundTab);
                         // Will cancel navigation
                         false
                     } else {
@@ -392,7 +386,7 @@ impl PipelineHandler for MySession {
             let browser = self.find_browser_for_pipeline(pipeline_id);
             self.find_window_for_browser(browser)
         }
-        window.create_new_browser(load_data, disposition);
+        window.add_browser(load_data, disposition);
     }
 
     fn confirm(&self, pipeline_id: PipelineID, title: String, message: String) -> impl Future<Item=bool> {

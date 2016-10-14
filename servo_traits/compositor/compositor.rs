@@ -47,7 +47,7 @@ pub trait Compositor {
     fn new(drawable: &Drawable) -> Compositor;
     fn get_id(&self) -> CompositorID;
     fn invalidate_frame(&self);
-    fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame, browser: BrowserID) -> Viewport;
+    fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame) -> Viewport;
     fn get_viewports(&self) -> Iterator<Viewport>;
     fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
     fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;

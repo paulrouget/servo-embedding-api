@@ -6,8 +6,6 @@ pub struct CompositeAndTransform {
 pub trait Viewport: View {
     fn get_id(&self) -> ViewportID;
 
-    fn get_attached_browser(&self) -> Option<BrowserID>;
-
     // Not displayed if not visible.
     // Skipped by get_viewports_from_point if not visible
     fn set_visibility(&self, visible: bool);
@@ -44,11 +42,12 @@ pub trait Viewport: View {
     // relatively to the native display.
     //
     // The content will be resized and/or scrolled. DOM events are sent only once
-    // send_resize_and_scroll_events_to_browser is called.
+    // resize_and_scroll_browser is called.
 
     fn set_content_frame(&self, content_frame: ContentFrame, Option<Animation>) -> impl Future<Item = ContentFrame>;
 
-    fn send_resize_and_scroll_events_to_browser(&self);
+    // Will reflow and send resize and scroll events to document
+    fn resize_and_scroll_browser(&self);
 
     // The embedder, at the compositor level, might want to move an element of the page without
     // a roundtrip to the pipeline. This will provide a reference to the stacking context linked

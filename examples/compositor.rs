@@ -85,7 +85,7 @@ impl MyCompositor {
                         viewport.set_content_frame(frame, None);
 
                         // Warning! When translate_toolbar is back to false, or the user release the touch pad,
-                        // call viewport.send_resize_and_scroll_events_to_browser()
+                        // call viewport.resize_and_scroll_browser
                     }
 
                     let msg = BrowserMsg::MouseEvent(event, browser);
@@ -105,7 +105,7 @@ impl MyCompositor {
 
     fn handle_browser_message(&self, message: CompositorMsg) {
         match message {
-            CompositorMsg::CreateViewport(browser, visible) => {
+            CompositorMsg::CreateViewport(sender) => {
                 let framebuffer_size = …; // Size of the GL region
                 let w = framebuffer_size.width;
                 let h = framebuffer_size.height;
@@ -120,9 +120,7 @@ impl MyCompositor {
                 content_frame.coordinates.origin.x = toolbar_height;
                 content_frame.coordinates.size.height -= toolbar_height;
                 let viewport = self.compositor.new_viewport(frame, content_frame, browser);
-                viewport.set_visible(visible);
-                let msg = BrowserMsg::NewViewport(viewport.get_id(), browser);
-                self.browser_sender.send(msg);
+                sender.send(viewport.get_id());
             },
             CompositorMsg::KillViewport(viewpo) {
                 // Destroy viewport

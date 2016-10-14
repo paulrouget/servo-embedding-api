@@ -29,6 +29,7 @@ enum Event {
 pub trait Browser {
     fn new(session: &Session,
            browsing_context_name: String
+           viewport: ViewportID,
            browser_handler: &BrowserHandler,
            pipeline_handler: &PipelineHandler,
            http_handler: &HttpHandler) -> Browser;
