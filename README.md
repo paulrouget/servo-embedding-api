@@ -4,6 +4,8 @@ least, to build a Servo-based browser.
 
 This API is in Rust. We don't want to expose a JS API directly from Servo.
 
+See usage [examples here](https://github.com/paulrouget/servo-embedding-api/issues/2).
+
 To understand how that fit in the BrowserHTML story, see the [JS_API.md](JS_API.md) document.
 
 The API is split in two: [`/compositor/`](servo_traits/compositor)
