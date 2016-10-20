@@ -42,12 +42,12 @@ pub trait Viewport: View {
     // relatively to the native display.
     //
     // The content will be resized and/or scrolled. DOM events are sent only once
-    // resize_and_scroll_browser is called.
+    // resize_and_scroll_browsers is called.
 
     fn set_content_frame(&self, content_frame: ContentFrame, Option<Animation>) -> impl Future<Item = ContentFrame>;
 
     // Will reflow and send resize and scroll events to document
-    fn resize_and_scroll_browser(&self);
+    fn resize_and_scroll_browsers(&self);
 
     // The embedder, at the compositor level, might want to move an element of the page without
     // a roundtrip to the pipeline. This will provide a reference to the stacking context linked

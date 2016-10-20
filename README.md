@@ -14,8 +14,6 @@ One code lives in the Compositor thread, the other in the Constellation thread.
 
 # overview
 
-A [`Viewport`](servo_traits/compositor/viewport.rs) is linked to a [`Browser`](servo_traits/browser/browser.rs).
-
 The embedder provides a [`Drawable`](servo_traits/compositor/compositor.rs) object, which gives access to the GL context.
 
 A [`Compositor`](servo_traits/compositor/compositor.rs) object is built from [`Drawable`](servo_traits/compositor/compositor.rs).
@@ -24,7 +22,9 @@ One [`Compositor+Drawable`](servo_traits/compositor/compositor.rs) per native wi
 
 A [`Compositor`](servo_traits/compositor/compositor.rs) holds a list of [`Viewport`](servo_traits/compositor/viewport.rs).
 
-A [`Viewport`](servo_traits/compositor/viewport.rs) is where a web page is drawn.
+A [`Viewport`](servo_traits/compositor/viewport.rs) is linked to one or several [`Browser`](servo_traits/browser/browser.rs).
+
+A [`Viewport`](servo_traits/compositor/viewport.rs) is where a web page is painted.
 
 A [`PipelinePreview`](servo_traits/compositor/compositor.rs) is a special type of [`Viewport`](servo_traits/compositor/viewport.rs) that can mirror a pipeline from another Browser. Its dimensions don't affect the page layout.
 

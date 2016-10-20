@@ -85,7 +85,7 @@ impl MyCompositor {
                         viewport.set_content_frame(frame, None);
 
                         // Warning! When translate_toolbar is back to false, or the user release the touch pad,
-                        // call viewport.resize_and_scroll_browser
+                        // call viewport.resize_and_scroll_browsers
                     }
 
                     let msg = BrowserMsg::MouseEvent(event, browser);
