@@ -33,8 +33,8 @@ Behind `NewNativeWindow`, Rust code:
 - create a native window (let's say a glutin window)
 - load libservo
 - create a Servo's [Compositor](servo_traits/compositor/compositor.rs) out of the window (wrapped as a [Drawable](servo_traits/compositor/compositor.rs))
-- create a full-window [Viewport](servo_traits/compositor/viewport.rs)
-- create and attach a [Browser](servo_traits/browser/browser.rs) to the Viewport, load `window.html`, with a special module resolver (see below)
+- create a full-window [BrowserView](servo_traits/compositor/browserview.rs)
+- create and attach a [Browser](servo_traits/browser/browser.rs) to the BrowserView, load `window.html`, with a special module resolver (see below)
 - a JS binding translates the Rust Browser into a JS Browser object (`browser1`)
 
 At this point, *window.html* is rendered full window in the native window.
@@ -42,7 +42,7 @@ At this point, *window.html* is rendered full window in the native window.
 We want that web page to be able to create other windows within
 that window (like `<iframes>`, but we don't want to re-use an existing element).
 
-To do so, we need to be able to create a Browser and a Viewport in JavaScript.
+To do so, we need to be able to create a Browser and a BrowserView in JavaScript.
 
 ### Browser:
 
@@ -68,18 +68,18 @@ At this point, 3 browsers are accessible:
 *Note: at no point in the Servo API we mention hierarchy. The fact that browser2 and browser3
 are "inside" browser1 has no implication.*
 
-### Viewport:
+### BrowserView:
 
-This is not enough, as these new tabs would be headless. A Viewport per Browser is necessary.
-`browser1` already has a viewport, created in Rust in `NewNativeWindow`.
+This is not enough, as these new tabs would be headless. A BrowserView per Browser is necessary.
+`browser1` already has a browserview, created in Rust in `NewNativeWindow`.
 
-We want the geometry of the viewport to be part of the layout of the page.
-To do so, Servo would implement a special DOM element called `<viewport>`,
+We want the geometry of the browserview to be part of the layout of the page.
+To do so, Servo would implement a special DOM element called `<browserview>`,
 that can be used to host a Browser.
-The layout thread of the top level Browser would update the actual Viewport
+The layout thread of the top level Browser would update the actual BrowserView
 coordinates and size.
 
-The Viewport methods are not accessible from browser1 script thread.
+The BrowserView methods are not accessible from browser1 script thread.
 Same for the Compositor methods.
 
 ```
@@ -92,7 +92,7 @@ run in Servo's Compositor thread, where Compositor's methods are accessible.
 
 Browser JS code and Compositor JS code can communicate via message passing.
 
-Each port of the SharedWorker is a viewport (3 here).
+Each port of the SharedWorker is a browserview (3 here).
 
 That means all browsers in a window share the same compositor.
 
@@ -103,9 +103,9 @@ thread. Not sure if that is possible*
 
 The native window would get a new event, which would be sent as a message to the compositor
 worker. It's then up to the JS code in compositor.js to route the event to the proper browser.
-If it's a mouse event, `Compositor.get_viewports_from_point` will return the viewport to target.
-If it's a keyboard event, the relevant viewport is the one that is attached to the focused browser.
-The event is sent to the browser attached to the viewport, and eventually sent back to the
+If it's a mouse event, `Compositor.get_browserviews_from_point` will return the browserview to target.
+If it's a keyboard event, the relevant browserview is the one that is attached to the focused browser.
+The event is sent to the browser attached to the browserview, and eventually sent back to the
 compositor.
 
 ___
@@ -114,8 +114,8 @@ ___
 We assumed `browser/` lives in the script thread of the host page, and `compositor/` in a worker,
 but we could also have both is workers.*
 
-*Note: The `<viewport>` tag will, hopefully, be the only non-standard element
+*Note: The `<browserview>` tag will, hopefully, be the only non-standard element
 that Servo will need to support. How to make it so that it's impossible to
-create a viewport element from regular web content? Maybe the viewport could
+create a browserview element from regular web content? Maybe the browserview could
 be initialized only if this JS context has access to a valid Browser object
 (only provided if the "Servo" module is accessible)?*

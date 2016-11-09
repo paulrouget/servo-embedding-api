@@ -1,7 +1,7 @@
 struct MyCompositor {
     compositor: Compositor,
     browser_sender: IpcSender<BrowserMsg>,
-    translate_viewport: bool,
+    translate_browserview: bool,
     translate_toolbar: bool,
 }
 
@@ -37,13 +37,13 @@ impl MyCompositor {
             },
             MouseEvent => {
                 let current_cursor = …;
-                // Get viewports under cursor
-                let iter = self.compositor.get_viewports_from_point(current_cursor);
-                // Get highest viewport
-                let viewport = iter.max_by_key(|v| {v.get_frame().z_index});
-                if Some(viewport) = viewport {
+                // Get browserviews under cursor
+                let iter = self.compositor.get_browserviews_from_point(current_cursor);
+                // Get highest browserview 
+                let browserview = iter.max_by_key(|v| {v.get_frame().z_index});
+                if Some(browserview) = browserview {
 
-                    let browser = viewport.get_attached_browser().unwrap();
+                    let browser = browserview.get_attached_browser().unwrap();
 
                     if !event_is_scroll {
                         let msg = BrowserMsg::MouseEvent(event, browser);
@@ -51,12 +51,12 @@ impl MyCompositor {
                         return
                     }
 
-                    if self.translate_viewport {
-                        // Scroll event and translate_viewport is true
+                    if self.translate_browserview {
+                        // Scroll event and translate_browserview is true
                         if event.phase == release {
-                            self.translate_viewport = false;
+                            self.translate_browserview = false;
                         } else {
-                            self.move_viewport_from_scrollevent(viewport, event);
+                            self.move_browserview_from_scrollevent(browserview, event);
                         }
                         return;
                     }
@@ -69,23 +69,23 @@ impl MyCompositor {
                         let y = event.delta_y;
 
                         // 1. Move toolbar
-                        // let's assume the toolbar is a DOM element in another viewport,
+                        // let's assume the toolbar is a DOM element in another browserview,
                         // and that DOM element is linked to a StackingContextID
-                        let toolbar_viewport = …;
+                        let toolbar_browserview = …;
                         let toolbar_id = …;
-                        let mut composite_and_transform = toolbar_viewport.get_composite_and_transform(toolbar_id).unwrap();
+                        let mut composite_and_transform = toolbar_browserview.get_composite_and_transform(toolbar_id).unwrap();
                         let transform = composite_and_transform.transform.post_translated(0,y,0);
                         composite_and_transform.transform = transform;
-                        toolbar_viewport.set_composite_and_transform(toolbar_id, composite_and_transform);
+                        toolbar_browserview.set_composite_and_transform(toolbar_id, composite_and_transform);
 
                         // 2. resize and move content
-                        let mut frame = viewport.get_content_frame();
+                        let mut frame = browserview.get_content_frame();
                         frame.coordinates.size.height += y;
                         frame.coordinates.origin.y -= y;
-                        viewport.set_content_frame(frame, None);
+                        browserview.set_content_frame(frame, None);
 
                         // Warning! When translate_toolbar is back to false, or the user release the touch pad,
-                        // call viewport.resize_and_scroll_browsers
+                        // call browserview.resize_and_scroll_browsers
                     }
 
                     let msg = BrowserMsg::MouseEvent(event, browser);
@@ -95,17 +95,17 @@ impl MyCompositor {
         }
     }
 
-    fn move_viewport_from_scrollevent(&self, viewport, event) {
+    fn move_browserview_from_scrollevent(&self, browserview, event) {
         // Only handle vertical scroll
         let delta_y = event.delta.y;
-        let mut new_frame = viewport.get_frame();
+        let mut new_frame = browserview.get_frame();
         new_frame.coordinates.origin.y += delta_y;
-        viewport.set_frame(new_frame, None);
+        browserview.set_frame(new_frame, None);
     }
 
     fn handle_browser_message(&self, message: CompositorMsg) {
         match message {
-            CompositorMsg::CreateViewport(sender) => {
+            CompositorMsg::CreateBrowserView(sender) => {
                 let framebuffer_size = …; // Size of the GL region
                 let w = framebuffer_size.width;
                 let h = framebuffer_size.height;
@@ -119,30 +119,30 @@ impl MyCompositor {
                 let mut content_frame = frame.clone();
                 content_frame.coordinates.origin.x = toolbar_height;
                 content_frame.coordinates.size.height -= toolbar_height;
-                let viewport = self.compositor.new_viewport(frame, content_frame, browser);
-                sender.send(viewport.get_id());
+                let browserview = self.compositor.new_browserview(frame, content_frame, browser);
+                sender.send(browserview.get_id());
             },
-            CompositorMsg::KillViewport(viewpo) {
-                // Destroy viewport
+            CompositorMsg::KillBrowserView(viewpo) {
+                // Destroy browserview
             },
             CompositorMsg::ShowConfirmDialog(browser, title, message) => {
                 // build a popup, draw it somewhere, wait for keyboard or
                 // mouse events to see if the user clicks cancel or ok.
                 // then send boolean back to browser
             },
-            CompositorMsg::PreviewManyPipelines(pipelines) {
+            CompositorMsg::PreviewManyDocuments(documents) {
                 // Maybe get all views first and hide them
 
                 let framebuffer_size = …; // Size of the GL region
 
                 let w = framebuffer_size.width;
                 let h = framebuffer_size.height;
-                let ratio = pipelines.len();
+                let ratio = documents.len();
                 let rect = Rect::new(0,0,w,h).scale(ratio,ratio);
 
                 let mut offset = 0;
 
-                pipelines.iter().map(|p| {
+                documents.iter().map(|p| {
                     let mut view_rect = rect.clone();
                     view_rect.origin.x = offset;
                     offset += rect.size.width;
@@ -152,17 +152,17 @@ impl MyCompositor {
                         background_color: Color::White,
                         opacity: 1,
                     }
-                    self.compositor.new_pipeline_view(frame, p);
+                    self.compositor.new_documentview(frame, p);
                 });
                 
 
             }
             CompositorMsg::UnconsumedScrollEvent(event, browserid) {
-                let viewport = …; // Get viewport from browserid
-                self.move_viewport_from_scrollevent(viewport, event);
+                let browserview = …; // Get browserview from browserid
+                self.move_browserview_from_scrollevent(browserview, event);
             }
-            CompositorMsg::ScrollViewportUntilRelease(_) {
-                self.translate_viewport = false;
+            CompositorMsg::ScrollBrowserViewUntilRelease(_) {
+                self.translate_browserview = false;
             }
         }
     }

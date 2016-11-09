@@ -46,21 +46,21 @@ impl BrowserHelper {
             browser.set_current_entry_index(i + 1);
         }
     }
-    fn get_current_pipeline(browser) {
+    fn get_current_document(browser) {
         browser.get_current_entry()
-               .map(|e| e.pipeline_id)
-               .map(|id| browser.get_pipeline(id))
+               .map(|e| e.document_id)
+               .map(|id| browser.get_document(id))
     }
-    fn create_new_viewport_and_browser(session, compositor) {
+    fn create_new_view_and_browser(session, compositor) {
         let (sender, receiver) = ipc::channel().unwrap();
-        let msg = CompositorMsg::CreateViewport(sender);
+        let msg = CompositorMsg::CreateBrowserView(sender);
         compositor.send(msg);
-        let viewport_id = receiver.recv().unwrap();
+        let browserview_id = receiver.recv().unwrap();
         Browser::new(session.session, // Session
                      "".to_owned(),
-                     viewport_id,
+                     browserview_id,
                      session, // BrowserHandler
-                     session, // pipeline handler
+                     session, // document handler
                      session, // http handler
                      );
     }
@@ -84,7 +84,7 @@ impl MyWindow { // One per native window
 
                         // strategy 2: all scroll events stay in compositor until
                         // the use remove his fingers from touchpad
-                        let msg = CompositorMsg::ScrollViewportUntilRelease(browserid);
+                        let msg = CompositorMsg::ScrollBrowserViewUntilRelease(browserid);
 
                         self.compositor_sender.send(msg);
                     }
@@ -102,17 +102,17 @@ impl MyWindow { // One per native window
 
                     ESC => { // stop loading
                         let browser = self.browsers[self.fg_browser_index];
-                        if browser.has_pending_pipeline() {
+                        if browser.has_pending_document() {
                             // there is a page to be loaded
-                            browser.cancel_pending_pipeline();
+                            browser.cancel_pending_document();
                         }
-                        if let Some(p) = BrowserHelper::get_current_pipeline(browser) {
+                        if let Some(p) = BrowserHelper::get_current_document(browser) {
                             p.stop_loading();
                         }
                     },
 
                     CMD_R => { // reload
-                        if let Some(p) = BrowserHelper::get_current_pipeline(browser) {
+                        if let Some(p) = BrowserHelper::get_current_document(browser) {
                             p.reload();
                         }
                     },
@@ -134,8 +134,8 @@ impl MyWindow { // One per native window
 
                     CMD_W => { // close tab
                         let browser = …; // Tab to close
-                        let viewport = …; // get viewport from hashmap
-                        let msg = CompositorMsg::KillViewport(viewport);
+                        let browserview = …; // get browserview from hashmap
+                        let msg = CompositorMsg::KillBrowserView(browserview);
                         self.compositor_sender.send(msg);
                         let load_data = browser.get_entries().map(|e| e.load_data);
                         let idx = browser.get_current_entry_index();
@@ -153,7 +153,7 @@ impl MyWindow { // One per native window
                             None => return,
                         }
                         let session = self.get_my_session();
-                        let browser = BrowserHelper::create_new_viewport_and_browser(session, self.compositor_sender);
+                        let browser = BrowserHelper::create_new_view_and_browser(session, self.compositor_sender);
                         browser.restore_entries(closed_tab.entries, closed_tab.current);
                         self.browsers.push(browser);
                         self.fg_browser_index = self.browsers.size - 1;
@@ -166,11 +166,11 @@ impl MyWindow { // One per native window
 
     fn user_hit_enter_in_urlbar(&self, url: String, user_value: String) {
         let browser = self.browsers[self.fg_browser_index];
-        if browser.has_prerendering_pipeline() {
-            // We assumed that the prerendering pipeline would
+        if browser.has_prerendering_document() {
+            // We assumed that the prerendering document would
             // have been dismissed if the user entered a different
             // url
-            browser.navigate_to_prerendering_pipeline(None);
+            browser.navigate_to_prerendering_document(None);
         } else {
             let load_data = LoadData {
                 url: url.clone(),
@@ -192,10 +192,10 @@ impl MyWindow { // One per native window
 
     fn user_about_to_hit_enter_in_urlbar(&self, url: String, user_value: String) {
         let browser = self.browsers[self.fg_browser_index];
-        if browser.has_prerendering_pipeline() {
-            browser.cancel_prerendering_pipeline();
+        if browser.has_prerendering_document() {
+            browser.cancel_prerendering_document();
         }
-        browser.build_prerendering_pipeline(LoadData {
+        browser.build_prerendering_document(LoadData {
             url: url.clone(),
             user_typed_value: user_value.clone(),
             transition_type: TransitionType::Typed,
@@ -211,17 +211,17 @@ impl MyWindow { // One per native window
         });
     }
 
-    fn invalidate_prerendering_pipeline() {
-        // Called if the preloading pipeline makes
+    fn invalidate_prerendering_document() {
+        // Called if the preloading document makes
         let browser = self.browsers[self.fg_browser_index];
-        if browser.has_prerendering_pipeline() {
-            browser.cancel_prerendering_pipeline();
+        if browser.has_prerendering_document() {
+            browser.cancel_prerendering_document();
         }
     },
 
     fn add_browser(&self,
                           load_data: LoadData,
-                          opener: Option<PipelineID>
+                          opener: Option<DocumentID>
                           disposition: WindowDisposition) {
 
         if disposition == WindowDisposition::NewWindow {
@@ -229,7 +229,7 @@ impl MyWindow { // One per native window
         }
 
         let session = self.get_my_session();
-        let browser = BrowserHelper::create_new_viewport_and_browser(session, self.compositor_sender);
+        let browser = BrowserHelper::create_new_view_and_browser(session, self.compositor_sender);
         browser.navigate(load_data, opener);
         self.browsers.push(browser);
         if disposition == WindowDisposition::ForegroundTab {
@@ -239,24 +239,24 @@ impl MyWindow { // One per native window
     }
 
     fn preview_browser_history(&self, browser) {
-        let pipelines = browser.get_entries().iter().filter_map(|e| {
-            e.pipeline_id
+        let documents = browser.get_entries().iter().filter_map(|e| {
+            e.document_id
         });
-        let msg = CompositorMsg::PreviewManyPipelines(pipelines);
+        let msg = CompositorMsg::PreviewManyDocuments(documents);
         self.compositor_sender.send(msg);
     }
 
     fn update_progressbar(&self) {
         let mut status = ProgressbarStatus::Loaded;
         let browser = self.browsers[self.fg_browser_index];
-        if browser.has_pending_pipeline() {
+        if browser.has_pending_document() {
             status = ProgressbarStatus::Connecting;
             // update progressbar
             return;
         }
 
-        let pipeline = BrowserHelper::get_current_pipeline(browser).unwrap();
-        let state = pipeline.get_pipeline_state();
+        let document = BrowserHelper::get_current_document(browser).unwrap();
+        let state = document.get_document_state();
 
         status = match state {
             Complete | Error(_) | Crash(_) => {
@@ -275,12 +275,12 @@ impl MySession {
     fn find_window_for_browser(&self, browser: BrowserID) -> &MyWindow {
         // […]
     },
-    fn find_browser_for_pipeline_id(&self, pipeline_id: PipelineID) -> BrowserID {
+    fn find_browser_for_document_id(&self, document_id: DocumentID) -> BrowserID {
         // This is not really handy. It's probably better to have a
-        // pipeline_id <-> browser hashmap, built with
+        // document_id <-> browser hashmap, built with
         // BrowserHandler::current_entry_index_changed
         self.browsers.find(|b| {
-            b.get_current_entry().unwrap().pipeline_id == pipeline_id
+            b.get_current_entry().unwrap().document_id == document_id
         });
     }
     fn create_new_native_window(&self) {
@@ -298,21 +298,21 @@ impl MySession {
     }
 }
 
-impl PipelineHandler for MySession {
+impl DocumentHandler for MySession {
 
-    fn will_navigate(&self, pipeline_id: PipelineID, load_data: LoadData) {
+    fn will_navigate(&self, document_id: DocumentID, load_data: LoadData) {
         match load_data.transition_type {
             LinkClicked(MiddleButton, _) |
             LinkClicked(_, CMD_KEY) |
             LinkClicked(_, CTRL_KEY) => {
-                let browser = self.find_browser_for_pipeline(pipeline_id);
+                let browser = self.find_browser_for_document(document_id);
                 let window = self.find_window_for_browser(browser);
                 window.add_browser(load_data, WindowDisposition::BackgroundTab);
                 // Will cancel navigation
                 false
             },
             JavaScript => {
-                let browser = self.find_browser_for_pipeline(pipeline_id);
+                let browser = self.find_browser_for_document(document_id);
                 let window = self.find_window_for_browser(browser);
                 window.add_browser(load_data, WindowDisposition::BackgroundTab);
                 false
@@ -322,10 +322,10 @@ impl PipelineHandler for MySession {
             },
             _ => {
                 // Will let navigation happen
-                let browser = self.find_browser_for_pipeline(pipeline_id);
+                let browser = self.find_browser_for_document(document_id);
                 if is_pin_tab(browser) { // the pin tab notion is an embedder thing
-                    let pipeline = browser.get_pipeline(pipeline_id).unwrap();
-                    let old_url = pipeline.get_url();
+                    let document = browser.get_document(document_id).unwrap();
+                    let old_url = document.get_url();
                     let old_domain = Url::parse(old_url).unwrap();
                     let new_domain = Url::parse(load_data.url).unwrap();
                     if old_domain != new_domain {
@@ -343,25 +343,25 @@ impl PipelineHandler for MySession {
         }
     }
 
-    fn title_changed(&self, pipeline_id: PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline_id);
-        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
-        let title = pipeline.get_title();
+    fn title_changed(&self, document_id: DocumentID) {
+        let browser = self.find_browser_for_document(document_id);
+        let document = browser.get_document(document_id).unwrap();
+        let title = document.get_title();
         // […] Update title in tab
     }
 
-    fn icons_changed(&self, pipeline_id: PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline_id);
-        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
-        let icons = pipeline.get_icons();
+    fn icons_changed(&self, document_id: DocumentID) {
+        let browser = self.find_browser_for_document(document_id);
+        let document = browser.get_document(document_id).unwrap();
+        let icons = document.get_icons();
         let best_fit = icons.fold(/*[…]*/);
         // […] Update icon in tab
     }
 
-    fn metas_changed(&self, pipeline_id, PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline_id);
-        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
-        let metas = pipeline.get_metas();
+    fn metas_changed(&self, document_id, DocumentID) {
+        let browser = self.find_browser_for_document(document_id);
+        let document = browser.get_document(document_id).unwrap();
+        let metas = document.get_metas();
         if let Some(meta) = metas.find(|m| m.name == "theme-color") {
             let color = meta.content;
             // […] Update color for tab
@@ -369,8 +369,8 @@ impl PipelineHandler for MySession {
 
     }
 
-    fn close(&self, pipeline_id: PipelineID) {
-        self.confirm(pipeline_id,
+    fn close(&self, document_id: DocumentID) {
+        self.confirm(document_id,
                      "Wanna close?".to_owned(),
                      "you will lose everything".to_owned())
             .and_then(|| {
@@ -378,19 +378,19 @@ impl PipelineHandler for MySession {
             });
     }
 
-    fn new_window(&self, pipeline_id: PipelineID, mut disposition: WindowDisposition, load_data: LoadData) {
+    fn new_window(&self, document_id: DocumentID, mut disposition: WindowDisposition, load_data: LoadData) {
         let window = if disposition == WindowDisposition::NewWindow {
             disposition = WindowDisposition::ForegroundTab
             self.create_new_native_window()
         } else {
-            let browser = self.find_browser_for_pipeline(pipeline_id);
+            let browser = self.find_browser_for_document(document_id);
             self.find_window_for_browser(browser)
         }
         window.add_browser(load_data, disposition);
     }
 
-    fn confirm(&self, pipeline_id: PipelineID, title: String, message: String) -> impl Future<Item=bool> {
-        let browser = self.find_browser_for_pipeline(pipeline_id);
+    fn confirm(&self, document_id: DocumentID, title: String, message: String) -> impl Future<Item=bool> {
+        let browser = self.find_browser_for_document(document_id);
         let window = self.find_window_for_browser(browser);
         let msg = CompositorMsg::ShowConfirmDialog(
             browser.get_id(),
@@ -401,20 +401,20 @@ impl PipelineHandler for MySession {
         // the compositor get the information
     }
 
-    fn state_changed(&self, pipeline_id: PipelineID) {
-        let browser = self.find_browser_for_pipeline(pipeline_id);
+    fn state_changed(&self, document_id: DocumentID) {
+        let browser = self.find_browser_for_document(document_id);
         let window = self.find_window_for_browser(browser);
         window.update_progressbar();
 
-        let pipeline = browser.get_pipeline(pipeline_id).unwrap();
-        let state = pipeline.get_pipeline_state();
+        let document = browser.get_document(document_id).unwrap();
+        let state = document.get_document_state();
         match state {
-            PipelineState::Error(_) => {
+            DocumentState::Error(_) => {
                 // Connection error
                 // Do something
             },
-            PipelineState::Complete => {
-                let http_response = pipeline.get_http_response().expect("error").unwrap();
+            DocumentState::Complete => {
+                let http_response = document.get_http_response().expect("error").unwrap();
                 let status = http_method.raw_status;
                 if status == 404 {
                     // Do something
@@ -427,16 +427,16 @@ impl PipelineHandler for MySession {
 
 impl BrowserHandler for MySession {
 
-    fn current_entry_index_changed(&self, browser, pipeline_id, index) {
-        // Update a map of browser <-> pipeline_id
+    fn current_entry_index_changed(&self, browser, document_id, index) {
+        // Update a map of browser <-> document_id
     }
 
-    fn pipeline_pending(&self, browser: BrowserID) {
+    fn document_pending(&self, browser: BrowserID) {
         let window = self.find_window_for_browser(browser);
         window.update_progressbar();
     }
 
-    fn no_pipeline_pending(&self, browser: BrowserID) {
+    fn no_document_pending(&self, browser: BrowserID) {
         let window = self.find_window_for_browser(browser);
         window.update_progressbar();
     }

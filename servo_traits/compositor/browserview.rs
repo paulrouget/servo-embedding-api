@@ -3,11 +3,11 @@ pub struct CompositeAndTransform {
     transform: Matrix4D<f32>,
 }
 
-pub trait Viewport: View {
-    fn get_id(&self) -> ViewportID;
+pub trait BrowserView: View {
+    fn get_id(&self) -> BrowserViewID;
 
     // Not displayed if not visible.
-    // Skipped by get_viewports_from_point if not visible
+    // Skipped by get_browserview_from_point if not visible
     fn set_visibility(&self, visible: bool);
     fn get_visibility(&self) -> bool;
 
@@ -53,10 +53,11 @@ pub trait Viewport: View {
     // a roundtrip to the pipeline. This will provide a reference to the stacking context linked
     // to an element.
     // This is useful for example in the scenario describe in the above comment, where a toolbar
-    // can be moved at the same time as a content frame. Both in 2 different viewports.
+    // can be moved at the same time as a content frame. Both in 2 different browserviews.
     // It is important for these 2 operations to be totally in sync.
     // FIXME: eventually, the stacking context will be destroyed. We should be notified of that.
-    fn get_stacking_context_id_for(&self, pipeline: PipelineID, selector: String) -> impl Future<Item=StackingContextID,Error=()>;
+    // FIXME: This is poorly designed. idealy, we could use the Houdini API.
+    fn get_stacking_context_id_for(&self, document: DocumentID, selector: String) -> impl Future<Item=StackingContextID,Error=()>;
     fn set_composite_and_transform(&self, id: StackingContextID, transform: CompositeAndTransform, Option<Animation>) -> Result<(),()>;
     fn get_composite_and_transform(&self, id: StackingContextID) -> Result<CompositeAndTransform,()>;
 }

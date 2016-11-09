@@ -1,15 +1,15 @@
 // A Browser has access to multiple content blockers: Popup blocker, tracking
 // content blocker, mixed content blocker, custom blocker (à la Safari).
-// Blockers are registered at 3 different levels: Session, Browser, Pipeline
+// Blockers are registered at 3 different levels: Session, Browser, Document
 // Blockers can be enabled or disabled.
-// Pipeline blockers take precedence over Browser blockers which take precedence
+// Document blockers take precedence over Browser blockers which take precedence
 // over Session blockers.
-// Blockers can be enabled/disabled just for a pipeline (allowing mixed content
+// Blockers can be enabled/disabled just for a document (allowing mixed content
 // for example is per page), just for a browser (we might want to allow popups
 // just for a tab) or for a whole session (block tracking for the whole session)
 //
 // Not all content blockers are enable on page load. Enabling a content blocker
-// for a page doesn't mean it will be activated for the next pipeline.
+// for a page doesn't mean it will be activated for the next document.
 
 pub enum ContentBlockerType {
     Popup, // Popup blocker
@@ -33,7 +33,7 @@ pub struct BlockedContentCount {
     blockable: u32,
 }
 
-// ** Implemented by Session, Browser and Pipeline **
+// ** Implemented by Session, Browser and Document **
 // A content blocker can be enabled just for a page, for a tab,
 // or for the whole browser.
 pub trait ContentBlockerConfiguration {

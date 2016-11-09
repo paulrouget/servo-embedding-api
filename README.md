@@ -20,33 +20,33 @@ A [`Compositor`](servo_traits/compositor/compositor.rs) object is built from [`D
 
 One [`Compositor+Drawable`](servo_traits/compositor/compositor.rs) per native window.
 
-A [`Compositor`](servo_traits/compositor/compositor.rs) holds a list of [`Viewport`](servo_traits/compositor/viewport.rs).
+A [`Compositor`](servo_traits/compositor/compositor.rs) holds a list of [`BrowserView`](servo_traits/compositor/browserview.rs).
 
-A [`Viewport`](servo_traits/compositor/viewport.rs) is linked to one or several [`Browser`](servo_traits/browser/browser.rs).
+A [`BrowserView`](servo_traits/compositor/browserview.rs) is linked to one or several [`Browser`](servo_traits/browser/browser.rs).
 
-A [`Viewport`](servo_traits/compositor/viewport.rs) is where a web page is painted.
+A [`BrowserView`](servo_traits/compositor/browserview.rs) is where a web page is painted.
 
-A [`PipelinePreview`](servo_traits/compositor/compositor.rs) is a special type of [`Viewport`](servo_traits/compositor/viewport.rs) that can mirror a pipeline from another Browser. Its dimensions don't affect the page layout.
+A [`DocumentPreview`](servo_traits/compositor/compositor.rs) is a special type of [`BrowserView`](servo_traits/compositor/browserview.rs) that can mirror a document from another Browser. Its dimensions don't affect the page layout.
 
-All [`Viewport`](servo_traits/compositor/viewport.rs) and [`PipelinePreview`](servo_traits/compositor/compositor.rs) have a coordinate, a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
+All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentPreview`](servo_traits/compositor/compositor.rs) have a coordinate, a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
 
-All [`Viewport`](servo_traits/compositor/viewport.rs) and [`PipelinePreview`](servo_traits/compositor/compositor.rs) are rendered and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
+All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentPreview`](servo_traits/compositor/compositor.rs) are rendered and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) (Servo's Frame) is the equivalent of a tab.
 
-A [`Browser`](servo_traits/browser/browser.rs) is attached to one [`Viewport`](servo_traits/compositor/compositor.rs).
+A [`Browser`](servo_traits/browser/browser.rs) is attached to one [`BrowserView`](servo_traits/compositor/compositor.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) offers access to methods and properties to manipulate the history and the web page.
 
-A [`Session`](servo_traits/browser/session.rs) has multiple [`Browser`](servo_traits/browser/browser.rs) which have multiple [`Pipeline`](servo_traits/browser/pipeline.rs).
+A [`Session`](servo_traits/browser/session.rs) has multiple [`Browser`](servo_traits/browser/browser.rs) which have multiple [`Document`](servo_traits/browser/document.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) is associated to one [`Session`](servo_traits/browser/session.rs), that controls offline data of a set of documents. Usually, a web browser would only use 2 sessions: a regular one, and a private one.
 
 A [`BrowserHandler`](servo_traits/browser/browser.rs) reports all the activity of a browser (history changes, navigation, …).
 
-A [`Pipeline`](servo_traits/browser/pipeline.rs) gives access to document properties and methods.
+A [`Document`](servo_traits/browser/document.rs) gives access to document properties and methods.
 
-A [`PipelineHandler`](servo_traits/browser/pipeline.rs) reports all the activity of a document (load state, url changes, title changes, …).
+A [`DocumentHandler`](servo_traits/browser/document.rs) reports all the activity of a document (load state, url changes, title changes, …).
 
 [`LoadData`](servo_traits/browser/load_data.rs) is a structure that holds all the information needed to load or restore a page.
 
@@ -59,12 +59,12 @@ The relevant compositor is the one associated to the native window.
 If it's a keyboard event, the relevant Browser is the focused Browser, which is
 known by the embedder.
 
-If it's a mouse/touch/pointer event, [Compositor's `get_viewports_from_point()`](servo_traits/compositor/compositor.rs)
-method will return all the viewports under the mouse.  (up to the embedder to
-pick the highest viewport or not).
+If it's a mouse/touch/pointer event, [Compositor's `get_browserviews_from_point()`](servo_traits/compositor/compositor.rs)
+method will return all the browserviews under the mouse.  (up to the embedder to
+pick the highest browserview or not).
 
 [Browser's `handle_event`](servo_traits/browser/browser.rs) method is used to forward the event to the Browser.
-Servo will pick the relevant Pipeline.  A Future is returned. Once the Future
+Servo will pick the relevant Document.  A Future is returned. Once the Future
 is resolved, the event has been through the page. The returned boolean will
 tell the embedder if the event has been consumed by the content (scroll
 actually happened, key event has been typed, preventDefault() has been called,

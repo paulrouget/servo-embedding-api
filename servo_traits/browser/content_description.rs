@@ -11,7 +11,7 @@ pub struct ContentDescriptionAtPoint {
     x: f32,
     y: f32,
 
-    pipeline_id: PipelineID, // Document owning the target
+    document_id: DocumentID, // Document owning the target
     link_url: Option<String>, // URL of the link that encloses the target
     link_text: Option<String>, // Text associated with the link. May be an empty string if the contents of the link are an image.
     src_url: Option<String>, // Source URL of the target. Elements with source URLs are images, audio and video.

@@ -1,5 +1,5 @@
 // This is usually used to build the application Edit menu.
-// Implemented by Browser, or maybe Pipeline
+// Implemented by Browser, or maybe Document
 
 pub struct EditableState {
     selected_text: String,

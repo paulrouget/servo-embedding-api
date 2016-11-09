@@ -2,9 +2,9 @@
 // For example, when the user type a new url and hit enter, Browser::navigate
 // is called with a LoadData.
 // 
-// This is all that is necessary to create a pipeline. It can be (de)serialized and saved on disk.
+// This is all that is necessary to create a document. It can be (de)serialized and saved on disk.
 // It can be used for session restore, and to undo tab close (Cmd-Shift-T). The creation of a
-// pipeline (navigation, session restore, restore on navigate) relies on this.  See
+// document (navigation, session restore, restore on navigate) relies on this.  See
 // constellation_msg::LoadData Relevant: https://github.com/servo/servo/pull/11893
 
 pub enum HTTPMethod { GET, POST }
@@ -30,19 +30,21 @@ pub struct FormDataEntry {
 pub struct LoadData {
   url: String,
   title: Option<String>,
-  http_method: HTTPMethod,
-  http_headers: Option<HTTPHeaders>, // See Headers.webidl
-  body: Option<BodyInit>, // See XMLHttpequest.webdil
+  http_method: HTTPMethod, // Needed for the "want to resend (POST) request?" warning message
   referrer_url: Option<String>,
-  scroll_position: Option<Point2D<f32>>,
-  scroll_restoration_mode: ScrollRestoration, // See History.webid. Auto by default
   transition_type: TransitionType,
-  js_state_object: Option<JSObject>, // window.history.pushState & co
-  form_data: Option<Vec<FormDataEntry>>,
   // The user input that lead to load this entry. For example,
   // if the user typed "foo bar" that eventually redirect to a
   // google URL, user typed value is "foo bar"
   user_typed_value: Option<String>,
+
+  // FIXME: exposing these is not really required
+  http_headers: Option<HTTPHeaders>, // See Headers.webidl
+  body: Option<BodyInit>, // See XMLHttpequest.webdil
+  scroll_position: Option<Point2D<f32>>,
+  scroll_restoration_mode: ScrollRestoration, // See History.webid. Auto by default
+  js_state_object: Option<JSObject>, // window.history.pushState & co
+  form_data: Option<Vec<FormDataEntry>>,
 
   // FIXME: I don't understand why the referrer policy should be
   // part of the LoadData, it's present in Servo's LoadData, and

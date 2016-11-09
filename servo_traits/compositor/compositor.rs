@@ -47,14 +47,14 @@ pub trait Compositor {
     fn new(drawable: &Drawable) -> Compositor;
     fn get_id(&self) -> CompositorID;
     fn invalidate_frame(&self);
-    fn new_viewport(&self, outer_frame: ViewFrame, content_frame: ContentFrame) -> Viewport;
-    fn get_viewports(&self) -> Iterator<Viewport>;
-    fn get_viewports_from_point(&self, Point2D<f32>) -> Iterator<Item = Viewport>;
-    fn new_pipeline_view(&self, frame:  ViewFrame, pipeline: PipelineID) -> View;
+    fn new_browserview(&self, outer_frame: ViewFrame, content_frame: ContentFrame) -> BrowserView;
+    fn get_browserviews(&self) -> Iterator<BrowserView>;
+    fn get_browserviews_from_point(&self, Point2D<f32>) -> Iterator<Item = BrowserView>;
+    fn new_documentview(&self, frame:  ViewFrame, document: DocumentID) -> View;
 }
 
-pub trait PipelineView : View {
-    // preview any pipeline (even frozen ones) and mirror
+pub trait DocumentView : View {
+    // preview any document (even frozen pipelines) and mirror
     // anything happening in that pipeline.
     // This view doesn't contrain the geometry of the pipeline in any way.
     // It's possible to render a pipeline multiple times.

@@ -14,18 +14,18 @@ pub enum PromptType {
   Confirm,
 }
 
-pub enum PipelineState {
+pub enum DocumentState {
     // Document not created yet.
     // Period between the time the user clicks on a link and the time the previous document becomes inactive
-    // FIXME: not sure we will ever have access to a pending pipeline
+    // FIXME: not sure we will ever have access to a pending document
     Pending,
 
     // Couldn't complete HTTP connection. Servo should not redirect to an error page. This should be handled client side.
-    Error(PipelineError),
-    // Pipeline crashed
-    Crash(PipelineError),
+    Error(DocumentError),
+    // Document crashed
+    Crash(DocumentError),
 
-    // Following values are the same as document.readyState
+    // Following values are the same as DOM's document.readyState
 
     // The document is still loading.
     Loading,
@@ -44,8 +44,8 @@ pub enum SaveType {
     MHTML,
 }
 
-// crash reports, DNS/TCP errors, … Not HTTP error (see Pipeline.HTTPResponse).
-pub struct PipelineError {
+// crash reports, DNS/TCP errors, … Not HTTP error (see Document.HTTPResponse).
+pub struct DocumentError {
     final_url: String,
     // Chrome error list: https://cs.chromium.org/chromium/src/net/base/net_error_list.h
     // FIXME: an enum would be better
@@ -77,14 +77,14 @@ pub struct ConsoleMessageDetails {
 }
 
 
-// It is likely that the embedder only wants to control the current and top level pipeline. So we
-// could expect Pipeline's and TopLevelPipeline's methods to be part of Browser. But we don't want
-// to set that in stone. Maybe in the future we want to give access to inner <iframe>' pipeline, or
-// frozen pipelines.
-// In term of lifetime, we want to make sure an instance of Pipeline doesn't outlive its internal's
+// It is likely that the embedder only wants to control the current and top level document. So we
+// could expect Document's and TopLevelDocument's methods to be part of Browser. But we don't want
+// to set that in stone. Maybe in the future we want to give access to inner <iframe>' document, or
+// frozen documents.
+// In term of lifetime, we want to make sure an instance of Document doesn't outlive its internal's
 // counter-part.
 
-pub trait Pipeline {
+pub trait Document {
     // URL changes during redirects
     fn get_url(&self) -> String;
     fn get_title(&self) -> Option<String>;
@@ -94,7 +94,7 @@ pub trait Pipeline {
 
     // Used to replace mozbrowserconnected, mozbrowserloadstart, mozbrowserloadend
     // Use performance for time stamps.
-    fn get_state(&self) -> PipelineState;
+    fn get_state(&self) -> DocumentState;
 
     // See Performance.webidl and PerformanceTiming.webidl
     // Necessary to implement https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/history/HistoryItem
@@ -105,7 +105,7 @@ pub trait Pipeline {
 
     fn stop_loading(&self);
 
-    // Will destroy that pipeline and create a new one
+    // Will destroy that document and create a new one
     fn reload(&self);
     fn clear_cache_and_reload(&self);
 
@@ -114,13 +114,13 @@ pub trait Pipeline {
     fn evaluateScript(&self, code: String, only_for_frame_script: bool) -> impl Future<Item = JSObject>;
 }
 
-// Pipeline methods that only work for top level pipelines
-pub trait TopLevelPipeline : Pipeline {
+// Document methods that only work for top level documents
+pub trait TopLevelDocument : Document {
 
     fn get_hovered_link(&self) -> Option<String>;
     fn get_connection_security(&self) -> ConnectionSecurity;
 
-    // We want to be able to render frozen pipeline, so we need
+    // We want to be able to render frozen document, so we need
     // a way to save the rendering.
     // FIXME: do we really want to let the client handle that?
     fn set_save_rendering_strategy(&self, strategy: SaveRenderingStrategy);
@@ -133,52 +133,52 @@ pub trait TopLevelPipeline : Pipeline {
 }
 
 
-pub trait PipelineHandler {
+pub trait DocumentHandler {
 
     // Warning: might not be current!
-    fn created(&self, pipeline: PipelineID); // Only after pending
-    fn destroyed(&self, pipeline: PipelineID);
+    fn created(&self, document: DocumentID); // Only after pending
+    fn destroyed(&self, document: DocumentID);
 
-    fn frozen(&self, pipeline: PipelineID);
-    fn thawn(&self, pipeline: PipelineID);
+    fn frozen(&self, document: DocumentID);
+    fn thawn(&self, document: DocumentID);
 
-    fn url_changed(&self, pipeline: PipelineID);
-    fn title_changed(&self, pipeline: PipelineID);
-    fn icons_changed(&self, pipeline: PipelineID);
-    fn metas_changed(&self, pipeline: PipelineID);
-    fn state_changed(&self, pipeline: PipelineID);
-    fn hovered_link_changed(&self, pipeline: PipelineID);
-    fn connection_security_changed(&self, pipeline: PipelineID);
+    fn url_changed(&self, document: DocumentID);
+    fn title_changed(&self, document: DocumentID);
+    fn icons_changed(&self, document: DocumentID);
+    fn metas_changed(&self, document: DocumentID);
+    fn state_changed(&self, document: DocumentID);
+    fn hovered_link_changed(&self, document: DocumentID);
+    fn connection_security_changed(&self, document: DocumentID);
 
-    // Up to the embedder to update the corresponding viewport
-    fn resize(&self, pipeline: PipelineID, Size2D<f32>);
-    fn move(&self, pipeline: PipelineID, Point2D<f32>);
+    // Up to the embedder to update the corresponding browserview
+    fn resize(&self, document: DocumentID, Size2D<f32>);
+    fn move(&self, document: DocumentID, Point2D<f32>);
 
     // Up to the embedder to destroy or not the Browser
-    fn close(&self, pipeline: PipelineID);
+    fn close(&self, document: DocumentID);
 
     // Warning: Cmd/Ctrl/Click should not trigger new_window. It's up to
     // the embedder to decide what to do when a link is clicked with a keyboard
     // modifier. See will_navigate and LoadData::TransitionType::LinkClicked.
-    fn new_window(&self, pipeline: PipelineID, disposition: WindowDisposition, load_data: LoadData, frame_name: String);
-    fn fullscreen(&self, pipeline: PipelineID);
-    fn exit_fullscreen(&self, pipeline: PipelineID);
-    fn console_message(&self, pipeline: PipelineID, message: ConsoleMessageDetails);
+    fn new_window(&self, document: DocumentID, disposition: WindowDisposition, load_data: LoadData, frame_name: String);
+    fn fullscreen(&self, document: DocumentID);
+    fn exit_fullscreen(&self, document: DocumentID);
+    fn console_message(&self, document: DocumentID, message: ConsoleMessageDetails);
     // It's possible to cancel navigation. For example, pin
     // tabs might want to open links from different domain
     // into a different tab.
     // false: navigation canceled.
-    fn will_navigate(&self, pipeline: PipelineID, load_data: LoadData) -> bool;
+    fn will_navigate(&self, document: DocumentID, load_data: LoadData) -> bool;
 
-    fn alert(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<>;
-    fn confirm(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<Item=bool>;
-    fn prompt(&self, pipeline: PipelineID, title: String, message: String) -> impl Future<Item=String>;
+    fn alert(&self, document: DocumentID, title: String, message: String) -> impl Future<>;
+    fn confirm(&self, document: DocumentID, title: String, message: String) -> impl Future<Item=bool>;
+    fn prompt(&self, document: DocumentID, title: String, message: String) -> impl Future<Item=String>;
     // Send Ok(username,password) or Err() if cancelled.
-    fn username_and_password(&self, pipeline: PipelineID) -> impl Future<Item=Result<(String,String),()>>;
+    fn username_and_password(&self, document: DocumentID) -> impl Future<Item=Result<(String,String),()>>;
     // Send back true if servo should ignore the certificate error
-    fn ignore_certificate_error(&self, pipeline: PipelineID, error: String, certificate: CertificateInfo) -> impl Future<Item=bool>;
+    fn ignore_certificate_error(&self, document: DocumentID, error: String, certificate: CertificateInfo) -> impl Future<Item=bool>;
 
     // One or several content blockers have blocked content or discovered
     // blockable content.
-    fn blocked_content_count_changed(&self, pipeline: PipelineID);
+    fn blocked_content_count_changed(&self, document: DocumentID);
 }

@@ -16,7 +16,7 @@ pub struct FindState {
     matches_count: u32,
 }
 
-// Implemented by Browser, or maybe Pipeline
+// Implemented by Browser, or maybe Document 
 pub trait Findable {
     fn get_state(&self) -> FindState;
     fn find(&self, text: String, case_sensitivity: CaseSensitivity);
