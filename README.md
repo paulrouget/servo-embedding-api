@@ -131,7 +131,7 @@ We want to be able to be able to change the UI on scroll, in the compositor. Thi
 The API described here is large, but there's a minimal set of tasks that we can start with:
 - We need to fix the top-level browsing context in Servo. We need the ability to have separate top-level browsing contexts. Either kill the root frame, or have multiple constellations.
 - Implement "LoadData". It's an "offline" version of a pipeline and contains all the data required to restore a pipeline that has been killed (e.g. through app shut down, or because the pipeline has been purged because it's distant history, or the tab has been closed and we want to restore it). It is also used to open new links in tabs and windows. Basically, improve the "HistoryEntry" struct introduced in #11893
-- Implement the "Browser" interface (no need to implement the Pipeline API at this stage)
+- Implement the "Browser" interface (no need to implement the Document API at this stage)
 - figure out how to create and initialise Browser and Compositor (right threads)
 - remove `fn main()` from components/servo, make ports/ the entry point, and move event routing to ports/ (maybe use libui-rs)
 - build, in a separate repo, a JS binding for this API
