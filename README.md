@@ -28,11 +28,11 @@ A [`BrowserView`](servo_traits/compositor/browserview.rs) is linked to one or se
 
 A [`BrowserView`](servo_traits/compositor/browserview.rs) is where a web page is painted.
 
-A [`DocumentPreview`](servo_traits/compositor/compositor.rs) is a special type of [`BrowserView`](servo_traits/compositor/browserview.rs) that can mirror a document from another Browser. Its dimensions don't affect the page layout.
+A [`DocumentView`](servo_traits/compositor/compositor.rs) is a special type of [`BrowserView`](servo_traits/compositor/browserview.rs) that can mirror a document from another Browser. Its dimensions don't affect the page layout.
 
-All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentPreview`](servo_traits/compositor/compositor.rs) have a coordinate, a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
+All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentView`](servo_traits/compositor/compositor.rs) have a coordinate (glViewport), a size, a z-index, an opacity and a background color. All these properties can be changed and animated.
 
-All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentPreview`](servo_traits/compositor/compositor.rs) are rendered and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
+All [`BrowserView`](servo_traits/compositor/browserview.rs) and [`DocumentView`](servo_traits/compositor/compositor.rs) are rendered and clipped by the [`Compositor`](servo_traits/compositor/compositor.rs).
 
 A [`Browser`](servo_traits/browser/browser.rs) (Servo's Frame) is the equivalent of a tab.
 
@@ -76,7 +76,6 @@ This gives the embedder 2 chances to respond to the event: once received from
 the native window, and after it's been through the content.
 
 # Rational
-
 
 A web browser is made of 3 components: the web engine, the frontend, and the runtime (OS integration). The work we are doing on the API is not about the runtime code (see [#7379](https://github.com/servo/servo/issues/7379) for runtime related work). The web engine is embedded. The web browser application is the embeddee. The proposed API is designed to make embedding Servo possible.
 
