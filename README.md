@@ -1,6 +1,6 @@
 **This is a non-normative and non-functional Rust API proposal for Servo. Only used to illustrate and outline a possible Servo embedding API.**
 
-It's built from the perspective of an embedder. This is what we would need, at least, to build a Servo-based browser.
+It's built from the perspective of an embedder. It takes into consideration future work that will be required to build a full browser (multi window, session restore, web extensions, permissions, …). It delegates as much as possible to the embedder.
 
 This API is in Rust. We don't want to expose a JS API directly from Servo.
 
@@ -80,7 +80,7 @@ the native window, and after it's been through the content.
 A web browser is made of 3 components: the web engine, the frontend, and the runtime (OS integration). The work we are doing on the API is not about the runtime code (see [#7379](https://github.com/servo/servo/issues/7379) for runtime related work). The web engine is embedded. The web browser application is the embeddee. The proposed API is designed to make embedding Servo possible.
 
 After experimenting with other APIs and web engines, we found three main problems that we want to address:
-- lack of separation of concerns: In Gecko, the web engine is also the runtime. Web standards get mixed up and polluted by non-web components,
+- Web standards get mixed up and polluted by non-web components (think Browser API & iframes),
 - too much abstractions: implementing anything that goes beyond the usual “tabs and history” paradigm is nearly impossible with any existing APIs, as they are designed with the assumption all browsers will be built the same way
 - no control over the compositor: we want to move pages around with gestures, bounce them,  scale them… but the current mechanisms jail pages in a rectangle
 
@@ -116,18 +116,6 @@ We want to have a better control over which events go to the page. We don't want
 We want to render non active web page (page from the history), like the swipe-to-go-back feature in Safari (problem with Webkit: this is a builtin feature of the engine, it is not a feature the embedder has access to)
 We want to be able to be able to change the UI on scroll, in the compositor. This kind of animation for example: https://youtu.be/Tf6PtZ1Z2eE / https://youtu.be/EhrkAKo4p5g
 
-## API suggestion
-
-We have been working on an API. It is close to Servo's internals. It takes into consideration future work that will be required to build a full browser (multi window, session restore, web extensions, permissions, …). It delegates as much as possible to the embedder.
-
-
-See https://github.com/paulrouget/servo-embedding-api
-
-
-The proposal is still in early stages, but it's good enough to get a sense of the general structure.
-
-
-This API could extend CEF. The only fundamental differences being the access to the compositor and the browerview, and the fact it’s closer to Servo’s internals.
 
 ## Links
 

@@ -1,13 +1,10 @@
 # Building a Servo-based browser in HTML and JavaScript
 
-The current Browser API "pollutes" Servo's code base, bends standards
-(`<iframe mozbrowser>`) and security policies (cross-domain XHR).
+The current Browser API "pollutes" Servo's code base, bends standards (`<iframe mozbrowser>`) and security policies (cross-domain XHR).
 
-We want the JS API to be as self contained as possible.
-It doesn't have to live within Servo's code base.
+We want the JS API to be as self contained as possible. It doesn't have to live within Servo's code base.
 
-We like the Electron approach where a webpage embeds a webpage,
-with a JS runtime on the side offering access to the OS.
+We like the Electron approach where a webpage embeds a webpage, with a JS runtime as a bridge between the embedder and the OS.
 
 The idea is to make Servo embed itself.
 
@@ -39,22 +36,19 @@ Behind `NewNativeWindow`, Rust code:
 
 At this point, *window.html* is rendered full window in the native window.
 
-We want that web page to be able to create other windows within
-that window (like `<iframes>`, but we don't want to re-use an existing element).
+We want that web page to be able to create other windows within that window (like `<iframes>`, but we want to use `<embed>`).
 
 To do so, we need to be able to create a Browser and a BrowserView in JavaScript.
 
 ### Browser:
 
-To expose JS bindings to *window.js*, when the window.html' browser is created
-in `NewNativeWindow`, a module resolver is registered via
-`Browser::register_js_module_resolver`
+To expose JS bindings to *window.js*, when the window.html' browser is created in `NewNativeWindow`, a module resolver is registered via `Browser::register_js_module_resolver`
 
 The binding will then be accessible from via a JS module:
 
 `import {Browser} from "Servo";`
 
-This is how we give special privilege to a Browser.
+**This is how we give special privilege to a Browser**.
 
 At this point, the JS code (`<script>` within `browser1`) can create a new browser (a tab):
 `var browser2 = new Browser()`.
@@ -74,10 +68,13 @@ This is not enough, as these new tabs would be headless. A BrowserView per Brows
 `browser1` already has a browserview, created in Rust in `NewNativeWindow`.
 
 We want the geometry of the browserview to be part of the layout of the page.
-To do so, Servo would implement a special DOM element called `<browserview>`,
-that can be used to host a Browser.
+To do so, Servo would use the `<embed>` tag as a browserview, to draw a Browser.
 The layout thread of the top level Browser would update the actual BrowserView
 coordinates and size.
+
+The browser could be initialized that way:
+
+`var browser2 = new Browser(embed_element)`
 
 The BrowserView methods are not accessible from browser1 script thread.
 Same for the Compositor methods.
@@ -96,9 +93,6 @@ Each port of the SharedWorker is a browserview (3 here).
 
 That means all browsers in a window share the same compositor.
 
-*note: the compositor created in NewNativeWindow and compositor.js would run in the same
-thread. Not sure if that is possible*
-
 # Life of an event
 
 The native window would get a new event, which would be sent as a message to the compositor
@@ -112,10 +106,4 @@ ___
 
 *Note: It is important to make `browser/` code and `compositor/` code live in different threads.
 We assumed `browser/` lives in the script thread of the host page, and `compositor/` in a worker,
-but we could also have both is workers.*
-
-*Note: The `<browserview>` tag will, hopefully, be the only non-standard element
-that Servo will need to support. How to make it so that it's impossible to
-create a browserview element from regular web content? Maybe the browserview could
-be initialized only if this JS context has access to a valid Browser object
-(only provided if the "Servo" module is accessible)?*
+but we could also have both in workers.*
