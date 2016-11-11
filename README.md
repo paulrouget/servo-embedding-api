@@ -91,7 +91,7 @@ After experimenting with other APIs and web engines, we found three main problem
 
 Servo should be only about rendering the web. Servo should worry as little as possible about OS-level problems. These should be handled in a "runtime", which is an orthogonal project.
 Servo should not have to worry about non-web related permission management.
-Servo should limit as much as possible non-standard behavior. The current Browser API "pollutes" Servo's code base, bends standards (<iframe mozbrowser>) and security policies (cross-domain XHR).
+Servo should limit as much as possible non-standard behavior. The current Browser API "pollutes" Servo's code base, bends standards (`<iframe mozbrowser>`) and security policies (cross-domain XHR).
 
 
 Disk IO should be delegated to the embedder where possible (session restore for example should be built at the embedder level).
@@ -148,7 +148,7 @@ The API described here is large, but there's a minimal set of tasks that we can 
 - figure out how to create and initialise Browser and Compositor (right threads)
 - remove `fn main()` from components/servo, make ports/ the entry point, and move event routing to ports/ (maybe use libui-rs)
 - build, in a separate repo, a JS binding for this API
-- implement Viewport and <viewport>
+- implement Viewport and `<viewport>`
 - implement a JS library that wrap the Servo API into the Browser API
 - Now, at this point, we can create a Rust project, that embeds Servo, create a Browser, inject the JS binding to the Browser instance (giving it special privileges), make Servo create a browserview, and we end up with Servo being the embedder and the embeddee
 - **get rid of all the mozbrowser code in Servo**
